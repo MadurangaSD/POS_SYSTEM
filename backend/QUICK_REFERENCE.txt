@@ -1,0 +1,142 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                  🚀 POS API - QUICK REFERENCE                 ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📍 BASE URL
+   http://localhost:3001
+
+🔐 AUTHENTICATION
+   Use your real admin/cashier accounts. Create users in your database before testing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📮 POSTMAN SETUP (3 STEPS)
+
+   1️⃣ Import Collection
+      File → Import → backend\POS-API-Postman.json
+
+   2️⃣ Create Environment
+      Name: POS Local
+      Variables:
+        baseUrl = http://localhost:3001
+        token = (leave empty)
+
+   3️⃣ Test Login
+      Send: POST /api/auth/login
+      Body: {"username":"<your-username>","password":"<your-password>"}
+      → Copy token from response
+      → Paste into environment variable "token"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 MOST USED ENDPOINTS
+
+┌─────────────────────────────────────────────────────────────┐
+│ AUTH                                                        │
+├─────────────────────────────────────────────────────────────┤
+│ POST /api/auth/login          | Login & get token         │
+│ GET  /api/auth/me             | Get current user          │
+│ POST /api/auth/logout         | Logout                    │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ PRODUCTS                                     🔒 Need Token  │
+├─────────────────────────────────────────────────────────────┤
+│ GET  /api/products            | List all products         │
+│ GET  /api/products?search=x   | Search products           │
+│ GET  /api/products/:id        | Get product details       │
+│ POST /api/products            | Create product (Admin)    │
+│ PUT  /api/products/:id        | Update product (Admin)    │
+│ DEL  /api/products/:id        | Delete product (Admin)    │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ SALES                                        🔒 Need Token  │
+├─────────────────────────────────────────────────────────────┤
+│ POST /api/sales               | Create new sale           │
+│ GET  /api/sales/:id           | Get sale details          │
+│ GET  /api/sales?start_date=x  | Filter sales by date      │
+│ GET  /api/sales/reports/daily | Daily sales report        │
+│ GET  /api/sales/reports/top   | Top selling products      │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ STOCK                                        🔒 Admin Only  │
+├─────────────────────────────────────────────────────────────┤
+│ POST /api/stock/adjust        | Adjust stock quantity     │
+│ POST /api/stock/purchases     | Record purchase order     │
+│ GET  /api/stock/low-stock     | Low stock report          │
+│ GET  /api/stock/value         | Total inventory value     │
+└─────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 POWERSHELL QUICK TEST
+
+# 1. Login
+$body = '{"username":"<your-username>","password":"<your-password>"}'
+$r = Invoke-RestMethod -Uri "http://localhost:3001/api/auth/login" `
+  -Method POST -Body $body -ContentType "application/json"
+$token = $r.token
+
+# 2. Get Products
+$h = @{ "Authorization" = "Bearer $token" }
+$products = Invoke-RestMethod -Uri "http://localhost:3001/api/products" `
+  -Method GET -Headers $h
+$products | Format-Table
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION FILES
+
+   📄 API_DOCUMENTATION.md   → Full API specs with examples
+   📄 POSTMAN_GUIDE.md       → Step-by-step Postman setup
+   📄 TESTING_GUIDE.md       → Quick testing reference
+   📄 TEST_RESULTS.md        → Latest test results
+   📄 POS-API-Postman.json   → Import this into Postman
+
+   Location: c:\Users\Acer\OneDrive\Desktop\POS_SYSTEM\backend\
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ IMPORTANT NOTES
+
+   ✓ All endpoints except /login need Authorization header
+   ✓ Format: Authorization: Bearer {your-token-here}
+   ✓ Token expires after some time - re-login if needed
+   ✓ Admin endpoints only accessible with admin role
+   ✓ Use MongoDB ObjectId format for product IDs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ TESTED & WORKING
+
+   ✓ Login endpoint
+   ✓ Get products
+   ✓ Get current user
+   ✓ Health check
+   ✓ MongoDB connection
+   ✓ JWT authentication
+   ✓ Database seeding (2 users, 8 products)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 NEXT STEPS
+
+   1. Seed database (optional but recommended)
+      - Ensure .env has MONGODB_URI and JWT_SECRET
+      - Optionally set SEED_* vars (admin/cashier usernames/passwords)
+      - Run: npm run db:seed
+
+      Default credentials:
+        • Admin   → admin / admin123
+        • Cashier → cashier / cashier123
+
+   2. Import Postman collection (see POSTMAN_GUIDE.md)
+   3. Test all endpoints with Postman
+   4. Connect React frontend to this backend
+   5. Test full POS flow (login → add products → checkout)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Need help? Check the documentation files listed above! 📚

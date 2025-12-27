@@ -1,0 +1,60 @@
+Branding Setup: SDM GROCERY and Logo
+
+Overview:
+This file documents how the shop name and logo are added to the frontend UI.
+
+Assets Location:
+- Logo file path: frontend/public/logo.png
+  Place your logo image here with the exact filename: logo.png
+
+Configuration:
+- Brand config file: frontend/src/config/brand.js
+  Contents:
+  - export const SHOP_NAME = "SDM GROCERY";
+  - export const LOGO_SRC = "/logo.png"; // served from public
+
+Reusable Component:
+- Logo component: frontend/src/components/Logo.jsx
+  Behavior:
+  - Imports LOGO_SRC from brand config.
+  - Displays the image at the provided size.
+  - Falls back to a simple text placeholder if the image fails to load.
+  Props:
+  - size (number): image width/height in pixels. Default: 48
+  - className (string): extra CSS classes for styling.
+  - src (string, optional): override image source if you want a different file.
+
+Pages Updated:
+1) Login Page
+   - File: frontend/src/pages/auth/LoginPage.jsx
+   - Added a header block inside CardContent above the login form:
+     <Logo size={56} /> + <span className="text-xl font-bold tracking-wide">{SHOP_NAME}</span>
+
+2) Admin Dashboard
+   - File: frontend/src/pages/admin/AdminDashboard.jsx
+   - Header now shows:
+     <Logo size={40} /> + <h1 className="text-2xl font-bold">{SHOP_NAME}</h1>
+
+How to Change Brand Name:
+- Edit frontend/src/config/brand.js and update SHOP_NAME.
+- Save and refresh the app; the new name will reflect wherever used.
+
+How to Change Logo:
+- Replace frontend/public/logo.png with your new image (same filename).
+- Use a PNG with transparent background for best results.
+
+Optional Extensions:
+- POS Header: Add the same logo+name block at the top of frontend/src/pages/pos/POSCheckoutPage.jsx.
+- Receipt: Insert logo+name in the printed receipt component at frontend/src/pages/pos/ReceiptPrint.jsx.
+
+Run/Verify:
+1) Ensure the logo file exists at frontend/public/logo.png.
+2) Start the frontend dev server:
+   - Open a terminal and run:
+     cd frontend
+     npm run dev
+3) Visit http://localhost:5173 and check the Login and Admin Dashboard headers.
+
+Notes:
+- If you prefer environment-based branding, move SHOP_NAME to an env var (e.g., VITE_SHOP_NAME) and read via import.meta.env in components.
+- Tailwind classes used for styling can be adjusted per your preference (sizes, spacing, fonts).

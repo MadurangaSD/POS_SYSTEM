@@ -1,0 +1,2 @@
+# POS_SYSTEM
+Grocery Shop POS System is a full-stack web-based application designed to simplify and automate daily operations of a grocery store. The system manages product inventory, billing, sales transactions, and customer records in real time. It provides a fast and user-friendly checkout process while ensuring accurate stock tracking and sales reporting. This project is built to help small and medium grocery businesses improve efficiency and reduce manual errors.

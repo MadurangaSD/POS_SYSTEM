@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test Login</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" value="admin"><br><br>
+        <input type="password" id="password" placeholder="Password" value="admin"><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    alert('Login successful!');
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+                alert('Connection error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
