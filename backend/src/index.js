@@ -8,6 +8,8 @@ const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/products");
 const salesRoutes = require("./routes/sales");
 const stockRoutes = require("./routes/stock");
+const categoryRoutes = require("./routes/categories");
+const brandRoutes = require("./routes/brands");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,6 +28,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/stock", stockRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/brands", brandRoutes);
 
 // Error handler
 app.use(errorHandler);

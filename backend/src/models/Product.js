@@ -1,28 +1,62 @@
 const mongoose = require('mongoose');
 
+// Variant schema for product variations (sizes, colors, etc.)
+const variantSchema = new mongoose.Schema({
+  size: {
+    type: String,
+    required: [true, 'Variant size is required'],
+  },
+  color: String,
+  sku: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  barcode: {
+    type: String,
+    unique: true,
+    required: [true, 'Variant barcode is required'],
+  },
+  costPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  sellingPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  quantity: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  images: [String],
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: [true, 'Product name is required'],
       trim: true,
-      unique: true,
     },
     barcode: {
       type: String,
-      required: [true, 'Barcode is required'],
-      unique: true,
+      required: [true, 'Base barcode is required'],
       trim: true,
     },
     description: String,
     imageUrl: String,
     category: {
-      type: String,
-      enum: [
-        'beverages', 'snacks', 'groceries', 'dairy', 'meat', 'vegetables', 'fruits',
-        'bakery', 'frozen', 'household', 'grains', 'spices', 'food', 'other'
-      ],
-      default: 'other',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'Category is required'],
+    },
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand',
     },
     costPrice: {
       type: Number,
@@ -44,6 +78,11 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    hasVariants: {
+      type: Boolean,
+      default: false,
+    },
+    variants: [variantSchema],
     reorderLevel: {
       type: Number,
       default: 10,

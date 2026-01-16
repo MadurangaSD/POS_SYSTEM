@@ -12,6 +12,8 @@ import {
   Users,
   BarChart3,
   LogOut,
+  Tag,
+  Tag2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
@@ -26,6 +28,8 @@ const Sidebar = () => {
   const menuItems = [
     { label: t("dashboard.title"), icon: LayoutDashboard, href: "/admin/dashboard" },
     { label: t("products.title"), icon: Package, href: "/admin/products" },
+    { label: "Categories", icon: Tag, href: "/admin/categories" },
+    { label: "Brands", icon: Tag2, href: "/admin/brands" },
     { label: t("inventory.title"), icon: Boxes, href: "/admin/inventory" },
     { label: t("sales.salesHistory"), icon: ShoppingCart, href: "/admin/sales-history" },
     { label: t("users.title"), icon: Users, href: "/admin/users" },

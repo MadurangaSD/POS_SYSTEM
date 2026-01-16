@@ -39,6 +39,8 @@ export default function ProductsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -53,7 +55,8 @@ export default function ProductsPage() {
   const [formData, setFormData] = useState({
     name: "",
     barcode: "",
-    category: "beverages",
+    category: "",
+    brand: "",
     imageUrl: "",
     costPrice: "",
     sellingPrice: "",
@@ -64,20 +67,6 @@ export default function ProductsPage() {
     sku: "",
     expiryDate: "",
   });
-
-  const categories = [
-    "beverages",
-    "snacks",
-    "groceries",
-    "dairy",
-    "meat",
-    "vegetables",
-    "fruits",
-    "bakery",
-    "frozen",
-    "household",
-    "other",
-  ];
 
   const loadProducts = async () => {
     try {
@@ -92,8 +81,30 @@ export default function ProductsPage() {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const response = await productsAPI.get("/api/categories");
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      toast.error("Failed to load categories");
+    }
+  };
+
+  const loadBrands = async () => {
+    try {
+      const response = await productsAPI.get("/api/brands");
+      setBrands(response.data || []);
+    } catch (error) {
+      console.error("Error loading brands:", error);
+      toast.error("Failed to load brands");
+    }
+  };
+
   useEffect(() => {
     loadProducts();
+    loadCategories();
+    loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -194,7 +205,8 @@ export default function ProductsPage() {
       setFormData({
         name: "",
         barcode: "",
-        category: "beverages",
+        category: "",
+        brand: "",
         imageUrl: "",
         costPrice: "",
         sellingPrice: "",
@@ -414,7 +426,7 @@ export default function ProductsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {product.category}
+                          {product.category?.name || 'Uncategorized'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -551,12 +563,12 @@ export default function ProductsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    <SelectItem key={cat._id} value={cat._id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -564,7 +576,29 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.cost')} *</label>
+              <label className="text-sm font-medium">Brand</label>
+              <Select
+                value={formData.brand}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, brand: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a brand (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand._id} value={brand._id}>
+                      {brand.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">{t('products.costPrice')} *</label>
               <Input
                 type="number"
                 step="0.01"

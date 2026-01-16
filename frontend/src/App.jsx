@@ -10,6 +10,8 @@ import SalesHistoryPage from "./pages/admin/SalesHistoryPage";
 import InventoryPage from "./pages/admin/InventoryPage";
 import UsersPage from "./pages/admin/UsersPage";
 import ReportsPage from "./pages/admin/ReportsPage";
+import CategoriesPage from "./pages/admin/CategoriesPage";
+import BrandsPage from "./pages/admin/BrandsPage";
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -102,6 +104,26 @@ function App() {
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminLayout>
                 <ReportsPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout>
+                <CategoriesPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/brands"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout>
+                <BrandsPage />
               </AdminLayout>
             </ProtectedRoute>
           }
