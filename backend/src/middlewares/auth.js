@@ -24,7 +24,11 @@ function adminMiddleware(req, res, next) {
 }
 
 function errorHandler(err, req, res, next) {
-  console.error(err);
+  // Log error details for debugging (excluding sensitive data)
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error:', err.message);
+  }
+  
   res.status(err.status || 500).json({
     error: err.message || "Internal server error",
   });

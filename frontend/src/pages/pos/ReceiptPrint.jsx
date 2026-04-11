@@ -18,13 +18,13 @@ export default function ReceiptPrint({ data, onClose }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-[hsl(var(--background))] flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <Card className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
         <CardContent className="p-6 space-y-4">
           {/* Receipt Preview */}
           <div
             ref={receiptRef}
-            className="bg-white p-8 border-2 border-dashed border-slate-300 rounded-lg"
+            className="rounded-lg border-2 border-dashed border-white/20 bg-[#242426] p-8"
             style={{ fontFamily: "monospace" }}
           >
             <div className="text-center mb-4">
@@ -34,7 +34,7 @@ export default function ReceiptPrint({ data, onClose }) {
               <p className="text-sm">Email: store@example.com</p>
             </div>
 
-            <div className="border-t-2 border-b-2 border-dashed border-slate-300 py-3 my-3">
+            <div className="my-3 border-y-2 border-dashed border-white/20 py-3">
               <div className="flex justify-between text-sm">
                 <span>Bill No:</span>
                 <span className="font-bold">{data.billNo}</span>
@@ -69,7 +69,7 @@ export default function ReceiptPrint({ data, onClose }) {
               </div>
             </div>
 
-            <div className="border-t-2 border-dashed border-slate-300 pt-3 space-y-2">
+            <div className="space-y-2 border-t-2 border-dashed border-white/20 pt-3">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
                 <span>{formatCurrency(Number(subtotal))}</span>
@@ -82,13 +82,13 @@ export default function ReceiptPrint({ data, onClose }) {
                 <span>Tax:</span>
                 <span>{formatCurrency(Number(tax))}</span>
               </div>
-              <div className="flex justify-between text-xl font-bold border-t-2 border-slate-300 pt-2">
+              <div className="flex justify-between border-t-2 border-white/20 pt-2 text-xl font-bold">
                 <span>TOTAL:</span>
                 <span>{formatCurrency(Number(total))}</span>
               </div>
             </div>
 
-            <div className="border-t-2 border-dashed border-slate-300 mt-3 pt-3 space-y-1 text-sm">
+            <div className="mt-3 space-y-1 border-t-2 border-dashed border-white/20 pt-3 text-sm">
               <div className="flex justify-between">
                 <span>Payment Method:</span>
                 <span className="uppercase font-semibold">{data.paymentMethod}</span>
@@ -107,7 +107,7 @@ export default function ReceiptPrint({ data, onClose }) {
               )}
             </div>
 
-            <div className="text-center mt-6 text-xs text-muted-foreground">
+            <div className="mt-6 text-center text-xs text-white/55">
               <p>Thank you for your purchase!</p>
               <p>Please come again</p>
               <p className="mt-2">--- END OF RECEIPT ---</p>

@@ -171,20 +171,20 @@ export default function InventoryPage() {
     setPurchaseData({ ...purchaseData, items: newItems });
   };
 
-  const surfaceCardClass = "surface";
+  const surfaceCardClass = "rounded-xl border border-white/5 bg-[#242426]";
   const avgStockValue = products.length ? totalInventoryValue / products.length : 0;
   const headerStats = [
     {
       label: t('dashboard.totalProducts'),
       value: products.length.toString(),
-      tone: 'blue',
+      tone: 'slate',
       isLoading: loading,
       helper: t('products.products'),
     },
     {
       label: t('dashboard.lowStockItems'),
       value: lowStockProducts.length.toString(),
-      tone: 'rose',
+      tone: 'slate',
       isLoading: loading,
       helper: lowStockProducts.length
         ? t('inventory.lowStockAlert', { count: lowStockProducts.length })
@@ -193,14 +193,14 @@ export default function InventoryPage() {
     {
       label: t('inventory.inventoryValue'),
       value: formatCurrency(totalInventoryValue),
-      tone: 'emerald',
+      tone: 'slate',
       isLoading: loading,
       helper: t('inventory.stockValue'),
     },
     {
       label: t('inventory.stockValue'),
       value: formatCurrency(avgStockValue),
-      tone: 'violet',
+      tone: 'slate',
       isLoading: loading,
       helper: 'Avg / SKU',
     },
@@ -210,7 +210,7 @@ export default function InventoryPage() {
     <Button
       key="inventory-back"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 hover:bg-white/[0.08]"
       onClick={() => navigate("/admin/dashboard")}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -218,7 +218,7 @@ export default function InventoryPage() {
     </Button>,
     <Button
       key="record-purchase"
-      className="h-11 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110"
+      className="h-11 rounded-xl bg-[#0A84FF] text-white hover:brightness-110"
       onClick={() => setShowPurchaseDialog(true)}
     >
       <ShoppingCart className="mr-2 h-4 w-4" />
@@ -227,7 +227,7 @@ export default function InventoryPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white/90">
       <PageHeader
         icon={Package}
         title={t('inventory.title')}
@@ -251,7 +251,7 @@ export default function InventoryPage() {
                   <div className="text-sm text-muted-foreground">{t('dashboard.totalProducts')}</div>
                   <div className="text-3xl font-bold">{products.length}</div>
                 </div>
-                <Package className="h-10 w-10 text-blue-500 opacity-50" />
+                <Package className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -260,11 +260,11 @@ export default function InventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-muted-foreground">{t('dashboard.lowStockItems')}</div>
-                  <div className="text-3xl font-bold text-red-600">
+                  <div className="text-3xl font-bold text-white">
                     {lowStockProducts.length}
                   </div>
                 </div>
-                <AlertTriangle className="h-10 w-10 text-red-500 opacity-50" />
+                <AlertTriangle className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -277,7 +277,7 @@ export default function InventoryPage() {
                     {formatCurrency(totalInventoryValue)}
                   </div>
                 </div>
-                <TrendingUp className="h-10 w-10 text-green-500 opacity-50" />
+                <TrendingUp className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -285,9 +285,9 @@ export default function InventoryPage() {
 
         {/* Low Stock Alert */}
         {lowStockProducts.length > 0 && (
-          <Card className={`${surfaceCardClass} border-red-200 bg-red-50/80 dark:border-rose-900/40 dark:bg-rose-950/40`}>
+          <Card className={`${surfaceCardClass} ring-1 ring-rose-400/35`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-700">
+              <CardTitle className="flex items-center gap-2 text-white/90">
                 <AlertTriangle className="h-5 w-5" />
                 {t('inventory.lowStockAlert', { count: lowStockProducts.length })}
               </CardTitle>
@@ -295,12 +295,12 @@ export default function InventoryPage() {
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {lowStockProducts.slice(0, 5).map((product) => (
-                  <Badge key={product._id} variant="destructive">
+                  <Badge key={product._id} className="border border-white/10 bg-white/[0.08] text-white">
                     {product.name}: {product.quantity} {t('inventory.left')}
                   </Badge>
                 ))}
                 {lowStockProducts.length > 5 && (
-                  <Badge variant="outline">+{lowStockProducts.length - 5} {t('inventory.more')}</Badge>
+                  <Badge variant="outline" className="border-white/10 bg-white/[0.03] text-white/80">+{lowStockProducts.length - 5} {t('inventory.more')}</Badge>
                 )}
               </div>
             </CardContent>
@@ -310,32 +310,32 @@ export default function InventoryPage() {
         {/* Inventory Table */}
         <Card className={`${surfaceCardClass} overflow-hidden`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white/95">
               <Package className="h-5 w-5" />
               {t('inventory.currentStockLevels')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-white/55">
                 {t('inventory.loading')}
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-white/55">
                 {t('products.noProducts')}
               </div>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('products.product')}</TableHead>
-                    <TableHead>{t('products.barcode')}</TableHead>
-                    <TableHead className="text-right">{t('inventory.currentStock')}</TableHead>
-                    <TableHead className="text-right">{t('products.reorderLevel')}</TableHead>
-                    <TableHead className="text-right">{t('products.cost')}</TableHead>
-                    <TableHead className="text-right">{t('inventory.stockValue')}</TableHead>
-                    <TableHead>{t('products.status')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="text-white/55">{t('products.product')}</TableHead>
+                    <TableHead className="text-white/55">{t('products.barcode')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('inventory.currentStock')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('products.reorderLevel')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('products.cost')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('inventory.stockValue')}</TableHead>
+                    <TableHead className="text-white/55">{t('products.status')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -344,35 +344,35 @@ export default function InventoryPage() {
                     const isLowStock = product.quantity <= product.reorderLevel;
                     
                     return (
-                      <TableRow key={product._id} className={isLowStock ? "bg-red-50" : ""}>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell className="font-mono text-sm">
+                      <TableRow key={product._id} className={`border-white/5 ${isLowStock ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}>
+                        <TableCell className="font-medium text-white/92">{product.name}</TableCell>
+                        <TableCell className="font-mono text-sm text-white/70">
                           {product.barcode}
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className={isLowStock ? "text-red-600 font-bold" : ""}>
+                          <span className={isLowStock ? "text-white font-bold" : "text-white/85"}>
                             {product.quantity}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
+                        <TableCell className="text-right text-white/60">
                           {product.reorderLevel}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right text-white/85">
                           {formatCurrency(product.costPrice)}
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-right font-medium text-white/95">
                           {formatCurrency(stockValue)}
                         </TableCell>
                         <TableCell>
                           {isLowStock ? (
-                            <Badge variant="destructive">
+                            <Badge className="border border-white/10 bg-white/[0.08] text-white">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               {t('inventory.lowStock')}
                             </Badge>
                           ) : product.quantity === 0 ? (
-                            <Badge variant="secondary">{t('inventory.outOfStock')}</Badge>
+                            <Badge variant="secondary" className="border border-white/10 bg-white/[0.03] text-white/70">{t('inventory.outOfStock')}</Badge>
                           ) : (
-                            <Badge variant="default" className="bg-green-500">
+                            <Badge className="border border-white/10 bg-white/[0.12] text-white">
                               {t('inventory.inStock')}
                             </Badge>
                           )}
@@ -381,6 +381,7 @@ export default function InventoryPage() {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="border-white/10 bg-[#1C1C1E] text-white/90 hover:bg-white/[0.08]"
                             onClick={() => handleOpenAdjustDialog(product)}
                           >
                             {t('inventory.adjust')}
@@ -398,7 +399,7 @@ export default function InventoryPage() {
 
       {/* Stock Adjustment Dialog */}
       <Dialog open={showAdjustDialog} onOpenChange={setShowAdjustDialog}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>{t('inventory.adjustStock')}</DialogTitle>
             <DialogDescription>
@@ -410,7 +411,7 @@ export default function InventoryPage() {
 
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium">{t('inventory.quantityChange')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('inventory.quantityChange')} *</label>
               <Input
                 type="number"
                 value={adjustmentData.quantity}
@@ -419,23 +420,23 @@ export default function InventoryPage() {
                 }
                 placeholder={t('inventory.quantityPlaceholder')}
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-white/55 mt-1">
                 {t('inventory.newStock')}: {selectedProduct?.quantity + parseInt(adjustmentData.quantity || 0)}
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('inventory.reason')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('inventory.reason')} *</label>
               <Select
                 value={adjustmentData.reason}
                 onValueChange={(value) =>
                   setAdjustmentData({ ...adjustmentData, reason: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-[#242426]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1C1C1E]">
                   <SelectItem value="received">{t('inventory.reasonReceived')}</SelectItem>
                   <SelectItem value="sold">{t('inventory.reasonSold')}</SelectItem>
                   <SelectItem value="damaged">{t('inventory.reasonDamaged')}</SelectItem>
@@ -448,7 +449,7 @@ export default function InventoryPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('inventory.notes')}</label>
+              <label className="text-sm font-medium text-white/85">{t('inventory.notes')}</label>
               <Input
                 value={adjustmentData.notes}
                 onChange={(e) =>
@@ -462,6 +463,7 @@ export default function InventoryPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
               onClick={() => {
                 setShowAdjustDialog(false);
                 setSelectedProduct(null);
@@ -469,14 +471,14 @@ export default function InventoryPage() {
             >
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAdjustStock}>{t('inventory.adjustStock')}</Button>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleAdjustStock}>{t('inventory.adjustStock')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Record Purchase Dialog */}
       <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>{t('inventory.recordPurchaseOrder')}</DialogTitle>
             <DialogDescription>{t('inventory.recordPurchaseDesc')}</DialogDescription>
@@ -485,7 +487,7 @@ export default function InventoryPage() {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">{t('inventory.supplier')} *</label>
+                <label className="text-sm font-medium text-white/85">{t('inventory.supplier')} *</label>
                 <Input
                   value={purchaseData.supplier}
                   onChange={(e) =>
@@ -495,7 +497,7 @@ export default function InventoryPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">{t('inventory.invoiceNumber')} *</label>
+                <label className="text-sm font-medium text-white/85">{t('inventory.invoiceNumber')} *</label>
                 <Input
                   value={purchaseData.invoiceNumber}
                   onChange={(e) =>
@@ -508,31 +510,31 @@ export default function InventoryPage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium">{t('inventory.items')}</label>
-                <Button size="sm" variant="outline" onClick={addItemToPurchase}>
+                <label className="text-sm font-medium text-white/85">{t('inventory.items')}</label>
+                <Button size="sm" variant="outline" className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]" onClick={addItemToPurchase}>
                   <TrendingUp className="h-4 w-4 mr-1" />
                   {t('inventory.addItem')}
                 </Button>
               </div>
 
               {purchaseData.items.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground border rounded-lg">
+                <div className="text-center py-6 text-white/55 border border-white/10 rounded-lg bg-[#242426]">
                   {t('inventory.noItems')}
                 </div>
               ) : (
                 <div className="space-y-2">
                   {purchaseData.items.map((item, index) => (
-                    <div key={index} className="flex gap-2 items-start border p-3 rounded-lg">
+                    <div key={index} className="flex gap-2 items-start border border-white/10 bg-[#242426] p-3 rounded-lg">
                       <Select
                         value={item.product_id}
                         onValueChange={(value) =>
                           updatePurchaseItem(index, "product_id", value)
                         }
                       >
-                        <SelectTrigger className="flex-1">
+                        <SelectTrigger className="flex-1 bg-[#1C1C1E]">
                           <SelectValue placeholder={t('inventory.selectProduct')} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-[#1C1C1E]">
                           {products.map((p) => (
                             <SelectItem key={p._id} value={p._id}>
                               {p.name} ({p.barcode})
@@ -562,9 +564,10 @@ export default function InventoryPage() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="text-white/70 hover:bg-white/[0.08] hover:text-white"
                         onClick={() => removePurchaseItem(index)}
                       >
-                        <TrendingDown className="h-4 w-4 text-destructive" />
+                        <TrendingDown className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -576,6 +579,7 @@ export default function InventoryPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
               onClick={() => {
                 setShowPurchaseDialog(false);
                 setPurchaseData({ supplier: "", invoiceNumber: "", items: [] });
@@ -583,7 +587,7 @@ export default function InventoryPage() {
             >
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleRecordPurchase}>{t('inventory.recordPurchase')}</Button>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleRecordPurchase}>{t('inventory.recordPurchase')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

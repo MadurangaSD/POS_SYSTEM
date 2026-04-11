@@ -54,15 +54,21 @@ export default function ReportsPage() {
       const reports = await Promise.all(salesPromises);
       const chartData = reports.map((report, index) => ({
         date: new Date(dates[index]).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-        revenue: report.totalRevenue,
-        sales: report.totalSales,
+        revenue: report.totalRevenue ?? report.total_sales ?? 0,
+        sales: report.totalSales ?? report.total_bills ?? 0,
       }));
 
       setSalesData(chartData);
 
       // Get top products
       const topProductsData = await salesAPI.getTopProducts(10, 30);
-      setTopProducts(topProductsData);
+      setTopProducts(
+        (topProductsData || []).map((product) => ({
+          productName: product.productName ?? product.name ?? 'Unknown',
+          totalRevenue: product.totalRevenue ?? product.total_revenue ?? 0,
+          totalQuantity: product.totalQuantity ?? product.units_sold ?? 0,
+        }))
+      );
     } catch (error) {
       console.error("Error loading reports:", error);
       toast.error("Failed to load reports");
@@ -88,30 +94,30 @@ export default function ReportsPage() {
   const totalSalesCount = salesData.reduce((sum, item) => sum + item.sales, 0);
   const avgDailySales = salesData.length > 0 ? totalRevenue / salesData.length : 0;
 
-  const surfaceCardClass = "surface";
+  const surfaceCardClass = "rounded-xl border border-white/5 bg-[#242426]";
   const headerStats = [
     {
       label: t('reports.weekRevenue'),
       value: formatCurrency(totalRevenue),
-      tone: 'emerald',
+      tone: 'slate',
       helper: t('reports.salesTrend'),
     },
     {
       label: t('reports.totalTransactions'),
       value: totalSalesCount.toString(),
-      tone: 'blue',
+      tone: 'slate',
       helper: t('sales.transactions'),
     },
     {
       label: t('reports.avgDailySales'),
       value: formatCurrency(avgDailySales),
-      tone: 'violet',
+      tone: 'slate',
       helper: t('reports.daily'),
     },
     {
       label: t('reports.topProductsRevenue'),
       value: topProducts[0]?.productName || t('common.loading'),
-      tone: 'amber',
+      tone: 'slate',
       helper: topProducts[0] ? formatCurrency(topProducts[0].totalRevenue) : '',
     },
   ];
@@ -120,7 +126,7 @@ export default function ReportsPage() {
     <Button
       key="reports-back"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 hover:bg-white/[0.08]"
       onClick={() => navigate("/admin/dashboard")}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -129,7 +135,7 @@ export default function ReportsPage() {
     <Button
       key="reports-export"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 hover:bg-white/[0.08]"
     >
       <Download className="mr-2 h-4 w-4" />
       {t('reports.export')}
@@ -137,7 +143,7 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white/90">
       <PageHeader
         icon={TrendingUp}
         title={t('reports.title')}
@@ -161,7 +167,7 @@ export default function ReportsPage() {
                   <div className="text-sm text-muted-foreground">{t('reports.weekRevenue')}</div>
                   <div className="text-3xl font-bold">{formatCurrency(totalRevenue)}</div>
                 </div>
-                <TrendingUp className="h-10 w-10 text-green-500 opacity-50" />
+                <TrendingUp className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -172,7 +178,7 @@ export default function ReportsPage() {
                   <div className="text-sm text-muted-foreground">{t('reports.totalTransactions')}</div>
                   <div className="text-3xl font-bold">{totalSalesCount}</div>
                 </div>
-                <BarChart3 className="h-10 w-10 text-blue-500 opacity-50" />
+                <BarChart3 className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -183,7 +189,7 @@ export default function ReportsPage() {
                   <div className="text-sm text-muted-foreground">{t('reports.avgDailySales')}</div>
                   <div className="text-3xl font-bold">{formatCurrency(avgDailySales)}</div>
                 </div>
-                <TrendingUp className="h-10 w-10 text-purple-500 opacity-50" />
+                <TrendingUp className="h-10 w-10 text-white/40" />
               </div>
             </CardContent>
           </Card>
@@ -192,15 +198,15 @@ export default function ReportsPage() {
         {loading ? (
           <Card className={surfaceCardClass}>
             <CardContent className="py-12">
-              <div className="text-center text-muted-foreground">{t('reports.loading')}</div>
+              <div className="text-center text-white/55">{t('reports.loading')}</div>
             </CardContent>
           </Card>
         ) : (
           <>
             {/* Sales Trend Chart */}
             <Card className={surfaceCardClass}>
-              <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                <CardTitle>{t('reports.salesTrend')}</CardTitle>
+              <CardHeader className="border-b border-white/5 bg-[#242426]">
+                <CardTitle className="text-white/95">{t('reports.salesTrend')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -235,8 +241,8 @@ export default function ReportsPage() {
             {/* Top Products Chart */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card className={surfaceCardClass}>
-                <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                  <CardTitle>{t('reports.topProductsRevenue')}</CardTitle>
+                <CardHeader className="border-b border-white/5 bg-[#242426]">
+                  <CardTitle className="text-white/95">{t('reports.topProductsRevenue')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={400}>
@@ -252,8 +258,8 @@ export default function ReportsPage() {
               </Card>
 
               <Card className={surfaceCardClass}>
-                <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                  <CardTitle>{t('reports.productSalesDistribution')}</CardTitle>
+                <CardHeader className="border-b border-white/5 bg-[#242426]">
+                  <CardTitle className="text-white/95">{t('reports.productSalesDistribution')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={400}>
@@ -280,32 +286,32 @@ export default function ReportsPage() {
 
             {/* Top Products Table */}
             <Card className={surfaceCardClass}>
-              <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-                <CardTitle>{t('reports.productPerformance')}</CardTitle>
+              <CardHeader className="border-b border-white/5 bg-[#242426]">
+                <CardTitle className="text-white/95">{t('reports.productPerformance')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {topProducts.map((product, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
+                      className="flex items-center justify-between rounded-lg border border-white/5 p-3 hover:bg-white/[0.03]"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-2xl font-bold text-muted-foreground">
+                        <div className="text-2xl font-bold text-white/45">
                           #{index + 1}
                         </div>
                         <div>
-                          <div className="font-medium">{product.productName}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-medium text-white/90">{product.productName}</div>
+                          <div className="text-sm text-white/55">
                             {product.totalQuantity} {t('common.unitsSold')}
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">
+                        <div className="text-lg font-bold text-white">
                           ₹{product.totalRevenue.toFixed(2)}
                         </div>
-                        <div className="text-xs text-muted-foreground">{t('reports.revenue')}</div>
+                        <div className="text-xs text-white/55">{t('reports.revenue')}</div>
                       </div>
                     </div>
                   ))}

@@ -106,4 +106,7 @@ const productSchema = new mongoose.Schema(
 // Text index for name search
 productSchema.index({ name: 'text' });
 
+// Unique index for barcode
+productSchema.index({ barcode: 1 }, { unique: true });
+
 module.exports = mongoose.model('Product', productSchema);

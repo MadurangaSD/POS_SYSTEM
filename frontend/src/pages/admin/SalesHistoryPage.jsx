@@ -90,33 +90,33 @@ export default function SalesHistoryPage() {
   const totalSales = filteredSales.length;
   const avgSale = totalSales > 0 ? totalRevenue / totalSales : 0;
 
-  const surfaceCardClass = "surface";
+  const surfaceCardClass = "rounded-xl border border-white/5 bg-[#242426]";
   const headerStats = [
     {
       label: t('sales.totalSales'),
       value: totalSales.toString(),
-      tone: 'blue',
+      tone: 'slate',
       isLoading: loading,
       helper: `${startDate} → ${endDate}`,
     },
     {
       label: t('sales.totalRevenue'),
       value: formatCurrency(totalRevenue),
-      tone: 'emerald',
+      tone: 'slate',
       isLoading: loading,
       helper: t('sales.transactions'),
     },
     {
       label: t('sales.averageSale'),
       value: formatCurrency(avgSale),
-      tone: 'violet',
+      tone: 'slate',
       isLoading: loading,
       helper: t('sales.perTransaction'),
     },
     {
       label: t('sales.payment'),
       value: `${filteredSales.length ? Math.round((filteredSales.filter((sale) => sale.paymentMethod === 'cash').length / filteredSales.length) * 100) : 0}% cash`,
-      tone: 'amber',
+      tone: 'slate',
       isLoading: loading,
       helper: t('sales.transactions'),
     },
@@ -126,7 +126,7 @@ export default function SalesHistoryPage() {
     <Button
       key="sales-back"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 hover:bg-white/[0.08]"
       onClick={() => navigate("/admin/dashboard")}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -134,7 +134,7 @@ export default function SalesHistoryPage() {
     </Button>,
     <Button
       key="sales-reports"
-      className="h-11 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110"
+      className="h-11 rounded-xl bg-[#0A84FF] text-white hover:brightness-110"
       onClick={() => navigate("/admin/reports")}
     >
       <Receipt className="mr-2 h-4 w-4" />
@@ -143,7 +143,7 @@ export default function SalesHistoryPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white/90">
       <PageHeader
         icon={Receipt}
         title={t('sales.title')}
@@ -191,23 +191,23 @@ export default function SalesHistoryPage() {
 
         {/* Filters and Table */}
         <Card className={`${surfaceCardClass} overflow-hidden`}>
-          <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <CardHeader className="border-b border-white/5 bg-[#242426]">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white/95">
                 <Receipt className="h-5 w-5" />
                 {t('sales.transactionsTitle')} ({filteredSales.length})
               </CardTitle>
               <div className="flex gap-2 flex-wrap">
                 {/* Date Range */}
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-white/50" />
                   <Input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-40"
                   />
-                  <span className="text-sm text-muted-foreground">{t('common.to')}</span>
+                  <span className="text-sm text-white/55">{t('common.to')}</span>
                   <Input
                     type="date"
                     value={endDate}
@@ -217,12 +217,12 @@ export default function SalesHistoryPage() {
                 </div>
                 {/* Search */}
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/45" />
                   <Input
                     placeholder={t('sales.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="relative z-10 pl-10"
                   />
                 </div>
               </div>
@@ -230,31 +230,31 @@ export default function SalesHistoryPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-white/55">
                 {t('sales.loading')}
               </div>
             ) : filteredSales.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-white/55">
                 {t('sales.noSales')}
               </div>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('sales.billNumber')}</TableHead>
-                    <TableHead>{t('sales.dateTime')}</TableHead>
-                    <TableHead>{t('sales.cashier')}</TableHead>
-                    <TableHead className="text-right">{t('sales.items')}</TableHead>
-                    <TableHead className="text-right">{t('sales.subtotal')}</TableHead>
-                    <TableHead className="text-right">{t('sales.discount')}</TableHead>
-                    <TableHead className="text-right">{t('sales.total')}</TableHead>
-                    <TableHead>{t('sales.payment')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead className="text-white/55">{t('sales.billNumber')}</TableHead>
+                      <TableHead className="text-white/55">{t('sales.dateTime')}</TableHead>
+                      <TableHead className="text-white/55">{t('sales.cashier')}</TableHead>
+                      <TableHead className="text-right text-white/55">{t('sales.items')}</TableHead>
+                      <TableHead className="text-right text-white/55">{t('sales.subtotal')}</TableHead>
+                      <TableHead className="text-right text-white/55">{t('sales.discount')}</TableHead>
+                      <TableHead className="text-right text-white/55">{t('sales.total')}</TableHead>
+                      <TableHead className="text-white/55">{t('sales.payment')}</TableHead>
+                      <TableHead className="text-right text-white/55">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSales.map((sale) => (
-                    <TableRow key={sale._id}>
+                      <TableRow key={sale._id} className="border-white/5 hover:bg-white/[0.03]">
                       <TableCell className="font-mono font-medium">
                         {sale.billNumber}
                       </TableCell>
@@ -273,7 +273,7 @@ export default function SalesHistoryPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {sale.discount > 0 ? (
-                          <span className="text-red-600">
+                          <span className="text-white">
                             -{formatCurrency(sale.discount)}
                           </span>
                         ) : (
@@ -284,7 +284,7 @@ export default function SalesHistoryPage() {
                         {formatCurrency(sale.total)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="border-white/10 bg-white/[0.03] text-white/85">
                           {sale.paymentMethod === 'cash' ? '💵' : sale.paymentMethod === 'card' ? '💳' : '📱'} {sale.paymentMethod}
                         </Badge>
                       </TableCell>
@@ -292,6 +292,7 @@ export default function SalesHistoryPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="text-white/75 hover:bg-white/[0.08] hover:text-white"
                           onClick={() => handleViewDetails(sale._id)}
                         >
                           <Eye className="h-4 w-4" />
@@ -308,7 +309,7 @@ export default function SalesHistoryPage() {
 
       {/* Sale Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>Sale Details</DialogTitle>
             <DialogDescription>
@@ -321,24 +322,24 @@ export default function SalesHistoryPage() {
               {/* Sale Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground">Date & Time</div>
+                  <div className="text-sm text-white/55">Date & Time</div>
                   <div className="font-medium">
                     {new Date(selectedSale.saleDate).toLocaleString()}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Cashier</div>
+                  <div className="text-sm text-white/55">Cashier</div>
                   <div className="font-medium">
                     {selectedSale.cashier?.username || 'N/A'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Payment Method</div>
+                  <div className="text-sm text-white/55">Payment Method</div>
                   <div className="font-medium">{selectedSale.paymentMethod}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">Status</div>
-                  <Badge variant="default" className="bg-green-500">
+                  <div className="text-sm text-white/55">Status</div>
+                  <Badge className="border border-white/10 bg-white/[0.12] text-white">
                     {selectedSale.status}
                   </Badge>
                 </div>
@@ -374,13 +375,13 @@ export default function SalesHistoryPage() {
               </div>
 
               {/* Totals */}
-              <div className="border-t pt-4 space-y-2">
+              <div className="border-t border-white/10 pt-4 space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
                   <span className="font-medium">₹{selectedSale.subtotal.toFixed(2)}</span>
                 </div>
                 {selectedSale.discount > 0 && (
-                  <div className="flex justify-between text-red-600">
+                  <div className="flex justify-between text-white">
                     <span>Discount:</span>
                     <span className="font-medium">-₹{selectedSale.discount.toFixed(2)}</span>
                   </div>
@@ -401,7 +402,7 @@ export default function SalesHistoryPage() {
                       <span>Amount Received:</span>
                       <span>₹{selectedSale.amountReceived.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-green-600">
+                    <div className="flex justify-between text-sm text-white/80">
                       <span>Change:</span>
                       <span>₹{selectedSale.change.toFixed(2)}</span>
                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "../../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export default function POSCheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const barcodeRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // Load products from backend
   useEffect(() => {
@@ -40,16 +41,11 @@ export default function POSCheckoutPage() {
     loadProducts();
   }, []);
 
-  // Auto-focus barcode input always
+  // Auto-focus barcode input when POS is ready, without stealing focus from other inputs
   useEffect(() => {
-    const focusBarcode = () => {
-      if (!showPayment && barcodeRef.current) {
-        barcodeRef.current.focus();
-      }
-    };
-    focusBarcode();
-    document.addEventListener("click", focusBarcode);
-    return () => document.removeEventListener("click", focusBarcode);
+    if (!showPayment && barcodeRef.current) {
+      barcodeRef.current.focus();
+    }
   }, [showPayment]);
 
   // Cart management functions
@@ -85,6 +81,9 @@ export default function POSCheckoutPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
+      const tagName = document.activeElement?.tagName;
+      const isTypingInField = tagName === "INPUT" || tagName === "TEXTAREA";
+
       if (e.key === "F1") {
         e.preventDefault();
         handleNewBill();
@@ -93,14 +92,14 @@ export default function POSCheckoutPage() {
         if (cart.length > 0) setShowPayment(true);
       } else if (e.key === "F3") {
         e.preventDefault();
-        document.getElementById("search-input")?.focus();
+        searchInputRef.current?.focus();
       } else if (e.key === "F4") {
         e.preventDefault();
-        if (cart.length > 0) handleQuantityChange(cart[0].id, cart[0].quantity + 1);
+        if (cart.length > 0) handleQuantityChange(cart[0]._id, cart[0].quantity + 1);
       } else if (e.key === "Escape") {
         e.preventDefault();
         if (showPayment) setShowPayment(false);
-        else if (cart.length > 0 && window.confirm("Cancel current bill?")) {
+        else if (!isTypingInField && cart.length > 0 && window.confirm("Cancel current bill?")) {
           handleNewBill();
         }
       }
@@ -126,57 +125,62 @@ export default function POSCheckoutPage() {
   const tax = subtotal * 0.0; // 0% tax - adjust as needed
   const grandTotal = subtotal + tax - discount;
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) return products;
+
+    return products.filter((product) =>
+      String(product.name || "").toLowerCase().includes(normalizedQuery)
+    );
+  }, [products, searchQuery]);
 
   return (
-    <div className="h-screen flex flex-col bg-[hsl(var(--background))] relative overflow-hidden">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-[#1C1C1E] font-[Inter] text-white/90">
       {/* Background layers */}
       <div className="app-backdrop"></div>
       <div className="app-noise"></div>
       
       {/* Header */}
-      <div className="relative z-10 bg-[hsl(var(--card))] border-b border-[hsl(var(--border))] shadow-[0_18px_50px_-35px_rgba(0,0,0,0.6)] px-4 lg:px-6 py-4">
+      <div className="relative z-10 border-b border-white/5 bg-[#2C2C2E] px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center justify-center p-3 rounded-xl bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] shadow-[0_18px_40px_-30px_rgba(0,0,0,0.7)]">
-              <svg className="w-7 h-7 text-[hsl(var(--primary))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="hidden items-center justify-center rounded-xl border border-white/5 bg-white/[0.04] p-3 md:flex">
+              <svg className="h-7 w-7 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-xl lg:text-2xl font-semibold text-[hsl(var(--foreground))]">{t('pos.title')}</h1>
-              <p className="text-xs lg:text-sm text-[hsl(var(--muted-foreground))]">
-                {t('pos.cashier')}: <span className="font-semibold text-[hsl(var(--primary))]">{localStorage.getItem("username") || t('common.unknown')}</span>
+              <h1 className="text-xl font-semibold text-white lg:text-2xl">{t('pos.title')}</h1>
+              <p className="text-xs text-white/60 lg:text-sm">
+                {t('pos.cashier')}: <span className="font-semibold text-white/90">{localStorage.getItem("username") || t('common.unknown')}</span>
               </p>
             </div>
           </div>
           <div className="hidden lg:flex gap-2 flex-wrap">
-            <Badge variant="outline" className="px-3 py-1.5 font-medium border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]"><kbd className="px-1 rounded bg-[hsl(var(--card))]">F1</kbd> {t('pos.newBill')}</Badge>
-            <Badge variant="outline" className="px-3 py-1.5 font-medium border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]"><kbd className="px-1 rounded bg-[hsl(var(--card))]">F2</kbd> {t('pos.payment')}</Badge>
-            <Badge variant="outline" className="px-3 py-1.5 font-medium border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]"><kbd className="px-1 rounded bg-[hsl(var(--card))]">F3</kbd> {t('pos.search')}</Badge>
-            <Badge variant="outline" className="px-3 py-1.5 font-medium border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]"><kbd className="px-1 rounded bg-[hsl(var(--card))]">ESC</kbd> {t('common.cancel')}</Badge>
+            <Badge variant="outline" className="border-white/10 bg-white/[0.04] px-3 py-1.5 font-medium text-white/85"><kbd className="rounded bg-black/20 px-1">F1</kbd> {t('pos.newBill')}</Badge>
+            <Badge variant="outline" className="border-white/10 bg-white/[0.04] px-3 py-1.5 font-medium text-white/85"><kbd className="rounded bg-black/20 px-1">F2</kbd> {t('pos.payment')}</Badge>
+            <Badge variant="outline" className="border-white/10 bg-white/[0.04] px-3 py-1.5 font-medium text-white/85"><kbd className="rounded bg-black/20 px-1">F3</kbd> {t('pos.search')}</Badge>
+            <Badge variant="outline" className="border-white/10 bg-white/[0.04] px-3 py-1.5 font-medium text-white/85"><kbd className="rounded bg-black/20 px-1">ESC</kbd> {t('common.cancel')}</Badge>
           </div>
         </div>
       </div>
 
       {/* Main Layout - Responsive */}
-      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 p-3 lg:p-4 overflow-hidden">
+      <div className="relative z-10 grid flex-1 grid-cols-1 gap-3 overflow-hidden p-3 lg:grid-cols-12 lg:gap-3 lg:p-3">
         
         {/* LEFT PANEL - Barcode & Product Search */}
-        <Card className="lg:col-span-3 flex flex-col surface animate-slideInFromLeft">
-          <CardHeader className="pb-3 border-b border-[hsl(var(--border))]">
-            <CardTitle className="text-base lg:text-lg flex items-center gap-2 text-[hsl(var(--foreground))]">
-              <Search className="w-5 h-5 text-[hsl(var(--primary))]" />
+        <Card className="animate-slideInFromLeft flex flex-col rounded-xl border border-white/5 bg-[#2C2C2E] lg:col-span-3">
+          <CardHeader className="border-b border-white/5 pb-2.5">
+            <CardTitle className="flex items-center gap-2 text-base text-white/90 lg:text-base">
+              <Search className="h-5 w-5 text-white/80" />
               {t('pos.productSearch')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col space-y-3 overflow-hidden pt-4">
+          <CardContent className="flex flex-1 flex-col space-y-2.5 overflow-hidden pt-3">
             {/* Barcode Input */}
             <form onSubmit={handleBarcodeSubmit} className="space-y-2">
-              <label className="text-xs lg:text-sm font-semibold flex items-center gap-2 text-[hsl(var(--foreground))]">
-                <Barcode className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <label className="flex items-center gap-2 text-xs font-semibold text-white/85 lg:text-sm">
+                <Barcode className="h-4 w-4 text-white/75" />
                 {t('pos.barcodeScanner')}
               </label>
               <Input
@@ -185,53 +189,54 @@ export default function POSCheckoutPage() {
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 placeholder={t('pos.barcodePlaceholder')}
-                className="h-11 lg:h-12 text-base lg:text-lg font-mono"
+                className="h-10 rounded-xl border-white/10 bg-[#1C1C1E] font-mono text-base text-white placeholder:text-white/35 focus-visible:ring-[#0A84FF] lg:h-11 lg:text-lg"
               />
             </form>
 
             {/* Search Bar */}
             <div className="space-y-2">
-              <label className="text-xs lg:text-sm font-semibold flex items-center gap-2 text-[hsl(var(--foreground))]">
-                <Search className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <label className="flex items-center gap-2 text-xs font-semibold text-white/85 lg:text-sm">
+                <Search className="pointer-events-none h-4 w-4 text-white/75" />
                 {t('pos.searchProduct')}
               </label>
               <Input
+                ref={searchInputRef}
                 id="search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('pos.searchPlaceholder')}
-                className="h-11 lg:h-12"
+                className="relative z-10 h-10 rounded-xl border-white/10 bg-[#1C1C1E] text-white placeholder:text-white/35 focus-visible:ring-[#0A84FF] lg:h-11"
               />
             </div>
 
             {/* Product Quick List */}
             <div className="flex-1 overflow-y-auto">
-              <p className="text-xs lg:text-sm font-semibold mb-3 text-[hsl(var(--foreground))]">{t('pos.quickSelect')}</p>
+              <p className="mb-2 text-xs font-semibold text-white/85 lg:text-sm">{t('pos.quickSelect')}</p>
               {loading ? (
-                <div className="text-center text-[hsl(var(--muted-foreground))] py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--primary))]"></div>
+                <div className="py-8 text-center text-white/55">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-[#0A84FF]"></div>
                   <p className="mt-2">{t('common.loading')}</p>
                 </div>
               ) : error ? (
-                <div className="text-center text-[hsl(var(--destructive))] py-4 text-sm bg-[color-mix(in_srgb,hsl(var(--destructive))_10%,transparent)] rounded-lg p-3 border border-[color-mix(in_srgb,hsl(var(--destructive))_30%,transparent)]">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 py-4 text-center text-sm text-white/80">
                   {error}
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {(searchQuery ? filteredProducts : products.slice(0, 8)).map((product, index) => (
                     <Button
                       key={product._id}
                       variant="outline"
-                      className="w-full justify-start h-auto py-3 px-3 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-all duration-200 animate-slideIn"
+                      className="animate-slideIn h-auto w-full justify-start rounded-xl border border-white/10 bg-[#1C1C1E] px-3 py-2.5 text-white/90 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06]"
                       style={{animationDelay: `${index * 30}ms`}}
                       onClick={() => addToCart(product)}
                     >
                       <div className="text-left w-full">
-                        <div className="font-semibold text-sm">{product.name}</div>
-                        <div className="text-xs flex justify-between mt-1 opacity-80">
-                          <span className="font-medium text-[hsl(var(--primary))]">Rs. {product.sellingPrice}</span>
-                          <span className="font-medium text-[hsl(var(--muted-foreground))]">
+                        <div className="text-sm font-medium leading-tight">{product.name}</div>
+                        <div className="mt-1 flex justify-between text-xs opacity-90">
+                          <span className="font-semibold text-white">Rs. {product.sellingPrice}</span>
+                          <span className="font-medium text-white/55">
                             {t('inventory.stock')}: {product.quantity}
                           </span>
                         </div>
@@ -245,48 +250,48 @@ export default function POSCheckoutPage() {
         </Card>
 
         {/* MIDDLE PANEL - Cart / Current Bill */}
-        <Card className="lg:col-span-6 flex flex-col surface animate-slideIn">
-          <CardHeader className="pb-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-            <CardTitle className="text-base lg:text-lg flex items-center justify-between text-[hsl(var(--foreground))]">
+        <Card className="animate-slideIn flex flex-col rounded-xl border border-white/5 bg-[#2C2C2E] lg:col-span-6">
+          <CardHeader className="border-b border-white/5 bg-transparent pb-2.5">
+            <CardTitle className="flex items-center justify-between text-base text-white/95 lg:text-base">
               <span className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-[hsl(var(--primary))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 {t('pos.currentBill')}
               </span>
-              <Badge variant="secondary" className="font-semibold pill px-3 py-1">{cart.length} {cart.length === 1 ? 'item' : 'items'}</Badge>
+              <Badge variant="secondary" className="pill border border-white/10 bg-white/[0.06] px-3 py-1 font-medium text-white/90">{cart.length} {cart.length === 1 ? 'item' : 'items'}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col space-y-3 overflow-hidden p-0 pt-4">
+          <CardContent className="flex flex-1 flex-col space-y-2 overflow-hidden p-0 pt-2.5">
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto px-4">
+            <div className="flex-1 overflow-y-auto px-3.5">
               {cart.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-[hsl(var(--muted-foreground))] p-8">
+                <div className="flex h-full items-center justify-center p-8 text-white/55">
                   <div className="text-center">
-                    <div className="mb-4 p-6 rounded-full bg-[hsl(var(--secondary))] inline-block">
+                    <div className="mb-4 inline-block rounded-full border border-white/5 bg-white/[0.03] p-6">
                       <svg className="h-16 w-16 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
-                    <p className="text-lg font-medium mb-1 text-[hsl(var(--foreground))]">Empty Cart</p>
+                    <p className="mb-1 text-lg font-medium text-white/90">Empty Cart</p>
                     <p className="text-sm">{t('pos.emptyCartHelp')}</p>
                   </div>
                 </div>
               ) : (
-                <div className="divide-y divide-[hsl(var(--border))]">
+                <div className="divide-y divide-white/5 rounded-xl border border-white/5 bg-[#1C1C1E]">
                   {cart.map((item, index) => (
-                    <div key={item._id} className="p-4 hover:bg-[hsl(var(--secondary))] transition-colors animate-slideIn rounded-lg" style={{animationDelay: `${index * 50}ms`}}>
+                    <div key={item._id} className="animate-slideIn px-3 py-2.5 transition-colors hover:bg-white/[0.04]" style={{animationDelay: `${index * 50}ms`}}>
                       <div className="flex items-center gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm lg:text-base truncate text-[hsl(var(--foreground))]">{item.name}</div>
-                          <div className="text-xs text-[hsl(var(--muted-foreground))] font-mono mt-0.5">{item.barcode}</div>
-                          <div className="text-sm font-medium text-[hsl(var(--primary))] mt-1">Rs. {item.sellingPrice}</div>
+                          <div className="truncate text-sm font-medium text-white lg:text-[15px]">{item.name}</div>
+                          <div className="mt-0.5 font-mono text-xs text-white/45">{item.barcode}</div>
+                          <div className="mt-1 text-sm font-semibold text-white/90">Rs. {item.sellingPrice}</div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 w-8 p-0 rounded-lg border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--destructive))] hover:text-[hsl(var(--destructive))]"
+                            className="h-8 w-8 rounded-lg border border-white/10 bg-white/[0.03] p-0 text-white/90 hover:bg-white/[0.08]"
                             onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
                           >
                             <Minus className="h-3 w-3" />
@@ -297,26 +302,26 @@ export default function POSCheckoutPage() {
                             onChange={(e) =>
                               handleQuantityChange(item._id, parseInt(e.target.value) || 1)
                             }
-                            className="w-14 h-8 text-center border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] rounded-lg font-semibold focus:border-[hsl(var(--primary))] focus:outline-none"
+                            className="h-8 w-14 rounded-lg border border-white/10 bg-white/[0.03] text-center font-semibold text-white focus:border-[#0A84FF] focus:outline-none"
                           />
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 w-8 p-0 rounded-lg border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                            className="h-8 w-8 rounded-lg border border-white/10 bg-white/[0.03] p-0 text-white/90 hover:bg-white/[0.08]"
                             onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                         <div className="text-right shrink-0 min-w-20">
-                          <div className="font-bold text-base lg:text-lg text-[hsl(var(--primary))]">
+                          <div className="text-base font-bold text-white lg:text-lg">
                             Rs. {(item.sellingPrice * item.quantity).toFixed(2)}
                           </div>
                         </div>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 text-[hsl(var(--destructive))] hover:bg-[color-mix(in_srgb,hsl(var(--destructive))_12%,transparent)] hover:text-[hsl(var(--destructive))] rounded-lg shrink-0"
+                          className="h-8 w-8 shrink-0 rounded-lg p-0 text-white/55 hover:bg-white/[0.08] hover:text-white"
                           onClick={() => removeFromCart(item._id)}
                         >
                           <X className="h-4 w-4" />
@@ -329,28 +334,28 @@ export default function POSCheckoutPage() {
             </div>
 
             {/* Bill Summary */}
-            <div className="border-t border-[hsl(var(--border))] p-4 bg-[hsl(var(--card))] space-y-3 px-4">
-              <div className="flex justify-between text-base lg:text-lg text-[hsl(var(--foreground))]">
+            <div className="space-y-2 border-t border-white/5 bg-[#2C2C2E] px-4 py-3.5">
+              <div className="flex justify-between text-base text-white/85 lg:text-lg">
                 <span className="font-medium">{t('pos.subtotal')}:</span>
-                <span className="font-semibold">{formatCurrency(subtotal)}</span>
+                <span className="font-bold">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-medium text-[hsl(var(--foreground))]">{t('pos.discount')}:</span>
+                <span className="font-medium text-white/85">{t('pos.discount')}:</span>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
                     value={discount}
                     onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                    className="w-24 h-9 text-right font-semibold border-[hsl(var(--border))] bg-[hsl(var(--input))] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))]"
+                    className="h-9 w-24 border-white/10 bg-[#1C1C1E] text-right font-semibold text-white focus-visible:ring-[#0A84FF]"
                     placeholder="0.00"
                   />
                 </div>
               </div>
-              <div className="flex justify-between text-base lg:text-lg text-[hsl(var(--foreground))]">
+              <div className="flex justify-between text-base text-white/85 lg:text-lg">
                 <span className="font-medium">{t('pos.tax', { percent: 0 })}:</span>
-                <span className="font-semibold">{formatCurrency(tax)}</span>
+                <span className="font-bold">{formatCurrency(tax)}</span>
               </div>
-              <div className="flex justify-between text-2xl lg:text-3xl font-bold border-t border-[hsl(var(--border))] pt-3 text-[hsl(var(--primary))]">
+              <div className="flex justify-between border-t border-white/10 pt-3 text-2xl font-bold text-white lg:text-3xl">
                 <span>{t('pos.total').toUpperCase()}:</span>
                 <span>{formatCurrency(grandTotal)}</span>
               </div>
@@ -359,19 +364,19 @@ export default function POSCheckoutPage() {
         </Card>
 
         {/* RIGHT PANEL - Payment Actions */}
-        <Card className="lg:col-span-3 flex flex-col surface animate-slideInFromRight">
-          <CardHeader className="pb-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-            <CardTitle className="text-base lg:text-lg flex items-center gap-2 text-[hsl(var(--foreground))]">
-              <svg className="w-5 h-5 text-[hsl(var(--primary))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Card className="animate-slideInFromRight flex flex-col rounded-xl border border-white/5 bg-[#2C2C2E] lg:col-span-3">
+          <CardHeader className="border-b border-white/5 bg-transparent pb-2.5">
+            <CardTitle className="flex items-center gap-2 text-base text-white/95 lg:text-base">
+              <svg className="h-5 w-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {t('pos.payment')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col space-y-3 pt-4">
+          <CardContent className="flex flex-1 flex-col space-y-2.5 pt-3">
             <Button
               size="lg"
-              className="w-full h-14 lg:h-16 text-lg lg:text-xl font-bold bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110 transition-all duration-200"
+              className="h-12 w-full rounded-xl bg-[#0A84FF] text-lg font-bold text-white transition-all duration-200 hover:brightness-110 lg:h-14 lg:text-xl"
               disabled={cart.length === 0}
               onClick={() => setShowPayment(true)}
             >
@@ -379,10 +384,10 @@ export default function POSCheckoutPage() {
             </Button>
 
             <div className="space-y-2">
-              <p className="text-xs lg:text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{t('pos.quickPayment')}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/55 lg:text-sm">{t('pos.quickPayment')}</p>
               <Button
                 variant="outline"
-                className="w-full h-12 lg:h-14 text-base lg:text-lg font-medium border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-all duration-200"
+                className="h-11 w-full rounded-xl border border-white/10 bg-[#1C1C1E] text-base font-medium text-white/90 transition-all duration-200 hover:bg-white/[0.08] lg:h-12 lg:text-lg"
                 disabled={cart.length === 0}
                 onClick={() => setShowPayment(true)}
               >
@@ -390,7 +395,7 @@ export default function POSCheckoutPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-12 lg:h-14 text-base lg:text-lg font-medium border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-all duration-200"
+                className="h-11 w-full rounded-xl border border-white/10 bg-[#1C1C1E] text-base font-medium text-white/90 transition-all duration-200 hover:bg-white/[0.08] lg:h-12 lg:text-lg"
                 disabled={cart.length === 0}
                 onClick={() => setShowPayment(true)}
               >
@@ -398,7 +403,7 @@ export default function POSCheckoutPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-12 lg:h-14 text-base lg:text-lg font-medium border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-all duration-200"
+                className="h-11 w-full rounded-xl border border-white/10 bg-[#1C1C1E] text-base font-medium text-white/90 transition-all duration-200 hover:bg-white/[0.08] lg:h-12 lg:text-lg"
                 disabled={cart.length === 0}
                 onClick={() => setShowPayment(true)}
               >
@@ -408,17 +413,17 @@ export default function POSCheckoutPage() {
 
             <div className="flex-1" />
 
-            <div className="space-y-2 pt-2 border-t border-[hsl(var(--border))]">
+            <div className="space-y-2 border-t border-white/5 pt-2">
               <Button
                 variant="outline"
-                className="w-full h-11 lg:h-12 font-semibold border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                className="h-10 w-full rounded-xl border border-white/10 bg-[#1C1C1E] font-semibold text-white/90 hover:bg-white/[0.08] lg:h-11"
                 disabled={cart.length === 0}
               >
                 <span className="text-xl mr-2">⏸️</span> {t('pos.holdBill')}
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-11 lg:h-12 font-semibold border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[color-mix(in_srgb,hsl(var(--destructive))_12%,transparent)] hover:border-[hsl(var(--destructive))] hover:text-[hsl(var(--destructive))]"
+                className="h-10 w-full rounded-xl border border-white/10 bg-[#1C1C1E] font-semibold text-white/90 hover:bg-white/[0.08] lg:h-11"
                 onClick={handleNewBill}
                 disabled={cart.length === 0}
               >

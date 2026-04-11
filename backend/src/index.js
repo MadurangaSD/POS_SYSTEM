@@ -13,9 +13,23 @@ const brandRoutes = require("./routes/brands");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS origin not allowed"));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Health check
@@ -44,8 +58,8 @@ if (require.main === module) {
   connectDB()
     .then(() => {
       app.listen(PORT, () => {
-        console.log(`🚀 POS Backend API running on http://localhost:${PORT}`);
-        console.log("📚 API Documentation: See API_DOCUMENTATION.md");
+        console.info(`🚀 POS Backend API running on http://localhost:${PORT}`);
+        console.info("📚 API Documentation: See API_DOCUMENTATION.md");
       });
     })
     .catch((error) => {

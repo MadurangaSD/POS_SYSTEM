@@ -83,7 +83,7 @@ export default function UsersPage() {
     setShowDeleteDialog(false);
   };
 
-  const surfaceCardClass = "surface";
+  const surfaceCardClass = "rounded-xl border border-white/5 bg-[#242426]";
   const activeUsers = users.filter((user) => user.isActive).length;
   const adminCount = users.filter((user) => user.role === "admin").length;
   const roleCount = new Set(users.map((user) => user.role)).size;
@@ -91,25 +91,25 @@ export default function UsersPage() {
     {
       label: t('users.systemUsers'),
       value: users.length.toString(),
-      tone: 'blue',
+      tone: 'slate',
       helper: t('users.subtitle'),
     },
     {
       label: t('users.roleAdmin'),
       value: adminCount.toString(),
-      tone: 'violet',
+      tone: 'slate',
       helper: t('users.role'),
     },
     {
       label: t('products.active'),
       value: activeUsers.toString(),
-      tone: 'emerald',
+      tone: 'slate',
       helper: t('products.status'),
     },
     {
       label: t('users.role'),
       value: roleCount.toString(),
-      tone: 'amber',
+      tone: 'slate',
       helper: t('users.userManagement'),
     },
   ];
@@ -118,7 +118,7 @@ export default function UsersPage() {
     <Button
       key="users-back"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 hover:bg-white/[0.08]"
       onClick={() => navigate("/admin/dashboard")}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -126,7 +126,7 @@ export default function UsersPage() {
     </Button>,
     <Button
       key="users-add"
-      className="h-11 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110"
+      className="h-11 rounded-xl bg-[#0A84FF] text-white hover:brightness-110"
       onClick={() => handleOpenDialog()}
     >
       <Plus className="mr-2 h-4 w-4" />
@@ -135,7 +135,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white/90">
       <PageHeader
         icon={Users}
         title={t('users.title')}
@@ -151,70 +151,72 @@ export default function UsersPage() {
 
       <div className="space-y-6">
         <Card className={surfaceCardClass}>
-          <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+          <CardHeader className="border-b border-white/5 bg-transparent">
+            <CardTitle className="flex items-center gap-2 text-white/95">
+              <Users className="h-5 w-5 text-white/80" />
               {t('users.systemUsers')} ({users.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>{t('users.username')}</TableHead>
-                  <TableHead>{t('users.role')}</TableHead>
-                  <TableHead>{t('products.status')}</TableHead>
-                  <TableHead>{t('users.lastLogin')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
+                <TableRow className="border-white/5 hover:bg-transparent">
+                  <TableHead className="text-white/55">{t('users.username')}</TableHead>
+                  <TableHead className="text-white/55">{t('users.role')}</TableHead>
+                  <TableHead className="text-white/55">{t('products.status')}</TableHead>
+                  <TableHead className="text-white/55">{t('users.lastLogin')}</TableHead>
+                  <TableHead className="text-right text-white/55">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
+                  <TableRow key={user.id} className="border-white/5 hover:bg-white/[0.02]">
+                    <TableCell className="font-medium text-white/92">
                       <div className="flex items-center gap-2">
                         {user.role === "admin" && (
-                          <Shield className="h-4 w-4 text-yellow-500" />
+                          <Shield className="h-4 w-4 text-white/70" />
                         )}
                         {user.username}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.role === "admin" ? "default" : "outline"}>
+                      <Badge className="border border-white/10 bg-white/[0.08] text-white">
                         {user.role}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {user.isActive ? (
-                        <Badge variant="default" className="bg-green-500">
+                        <Badge className="border border-white/10 bg-white/[0.12] text-white">
                           {t('products.active')}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">{t('products.inactive')}</Badge>
+                        <Badge variant="secondary" className="border border-white/10 bg-white/[0.03] text-white/70">{t('products.inactive')}</Badge>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-white/60">
                       {new Date(user.lastLogin).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
+                          className="border-white/10 bg-[#1C1C1E] text-white/90 hover:bg-white/[0.08]"
                           onClick={() => handleOpenDialog(user)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
+                          className="border-white/10 bg-[#1C1C1E] text-white/90 hover:bg-white/[0.08]"
                           onClick={() => {
                             setDeletingUser(user);
                             setShowDeleteDialog(true);
                           }}
                           disabled={user.role === "admin"}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -228,7 +230,7 @@ export default function UsersPage() {
 
       {/* Add/Edit User Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>
               {editingUser ? t('users.editUser') : t('users.addNewUser')}
@@ -240,7 +242,7 @@ export default function UsersPage() {
 
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm font-medium">{t('users.username')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('users.username')} *</label>
               <Input
                 value={formData.username}
                 onChange={(e) =>
@@ -251,7 +253,7 @@ export default function UsersPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-white/85">
                 {t('users.password')} {editingUser ? t('users.passwordHint') : '*'}
               </label>
               <Input
@@ -265,17 +267,17 @@ export default function UsersPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('users.role')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('users.role')} *</label>
               <Select
                 value={formData.role}
                 onValueChange={(value) =>
                   setFormData({ ...formData, role: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-[#242426]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1C1C1E]">
                   <SelectItem value="admin">{t('users.roleAdmin')}</SelectItem>
                   <SelectItem value="manager">{t('users.roleManager')}</SelectItem>
                   <SelectItem value="cashier">{t('users.roleCashier')}</SelectItem>
@@ -291,19 +293,19 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, isActive: e.target.checked })
                 }
-                className="h-4 w-4"
+                className="h-4 w-4 accent-[#0A84FF]"
               />
-              <label htmlFor="isActive" className="text-sm font-medium">
+              <label htmlFor="isActive" className="text-sm font-medium text-white/85">
                 {t('users.activeUser')}
               </label>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
+            <Button variant="outline" className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]" onClick={() => setShowDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSaveUser}>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleSaveUser}>
               {editingUser ? t('users.updateUser') : t('users.createUser')}
             </Button>
           </DialogFooter>
@@ -312,7 +314,7 @@ export default function UsersPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>{t('users.deleteUser')}</DialogTitle>
             <DialogDescription>
@@ -322,11 +324,12 @@ export default function UsersPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
               onClick={() => setShowDeleteDialog(false)}
             >
               {t('common.cancel')}
             </Button>
-            <Button variant="destructive" onClick={handleDeleteUser}>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleDeleteUser}>
               {t('common.delete')}
             </Button>
           </DialogFooter>

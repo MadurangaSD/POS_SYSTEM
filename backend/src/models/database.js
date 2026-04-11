@@ -13,8 +13,8 @@ const connectDB = async () => {
   try {
     const conn = await mongoose.connect(MONGODB_URI);
 
-    console.log(`✓ MongoDB connected: ${conn.connection.host}`);
-    console.log(`✓ Database: ${conn.connection.name}`);
+    console.info(`✓ MongoDB connected: ${conn.connection.host}`);
+    console.info(`✓ Database: ${conn.connection.name}`);
 
     // Initialize database with seed data
     await initializeDatabase();
@@ -44,7 +44,7 @@ const initializeDatabase = async () => {
       console.warn('⚠ No products found. Add products through your management flow.');
     }
 
-    console.log('✓ Database initialization complete');
+    console.info('✓ Database initialization complete');
   } catch (error) {
     console.error('✗ Database initialization error:', error.message);
   }
@@ -52,14 +52,14 @@ const initializeDatabase = async () => {
 
 function seedDatabase() {
   // Seeding is now handled in initializeDatabase
-  console.log('Database seeding handled by initializeDatabase');
+  console.info('Database seeding handled by initializeDatabase');
 }
 
 // Disconnect from MongoDB
 const disconnectDB = async () => {
   try {
     await mongoose.disconnect();
-    console.log('✓ MongoDB disconnected');
+    console.info('✓ MongoDB disconnected');
   } catch (error) {
     console.error('✗ MongoDB disconnection failed:', error.message);
     process.exit(1);
@@ -67,8 +67,8 @@ const disconnectDB = async () => {
 };
 
 function closeDatabase() {
-  // Handled by disconnectDB
-};
+  return disconnectDB();
+}
 
 module.exports = {
   connectDB,

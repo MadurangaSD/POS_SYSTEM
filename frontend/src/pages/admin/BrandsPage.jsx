@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import api from "@/services/api";
+import { brandsAPI } from "@/services/api";
 
 export default function BrandsPage() {
   const [brands, setBrands] = useState([]);
@@ -29,8 +29,8 @@ export default function BrandsPage() {
   const fetchBrands = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/brands");
-      setBrands(response.data);
+      const data = await brandsAPI.getAll();
+      setBrands(data);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to load brands");
     } finally {
@@ -83,10 +83,10 @@ export default function BrandsPage() {
       };
 
       if (editingId) {
-        await api.put(`/api/brands/${editingId}`, payload);
+        await brandsAPI.update(editingId, payload);
         toast.success("Brand updated successfully");
       } else {
-        await api.post("/api/brands", payload);
+        await brandsAPI.create(payload);
         toast.success("Brand created successfully");
       }
 
@@ -113,7 +113,7 @@ export default function BrandsPage() {
       return;
     }
     try {
-      await api.delete(`/api/brands/${id}`);
+      await brandsAPI.delete(id);
       toast.success("Brand deleted successfully");
       fetchBrands();
     } catch (error) {
@@ -132,18 +132,18 @@ export default function BrandsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 text-white/90">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Brand Management</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-white">Brand Management</h1>
+          <p className="mt-1 text-white/55">
             Create and manage product brands
           </p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="rounded-xl bg-[#0A84FF] text-white hover:brightness-110"
         >
           + Add Brand
         </Button>
@@ -152,31 +152,31 @@ export default function BrandsPage() {
       {/* Brands Grid */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <p className="text-gray-500">Loading brands...</p>
+          <p className="text-white/55">Loading brands...</p>
         </div>
       ) : brands.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-gray-500">No brands found. Create one to get started!</p>
+        <Card className="rounded-2xl border border-white/5 bg-[#242426] p-12 text-center">
+          <p className="text-white/55">No brands found. Create one to get started!</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {brands.map((brand) => (
             <Card
               key={brand._id}
-              className="p-4 hover:shadow-lg transition-shadow border-l-4 border-l-purple-500"
+              className="rounded-2xl border border-white/5 bg-[#242426] p-4 transition-all duration-200 hover:bg-white/[0.03]"
             >
               <div className="space-y-3">
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900">
+                  <h3 className="text-lg font-bold text-white/95">
                     {brand.name}
                   </h3>
                   {brand.manufacturer && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="mt-1 text-xs text-white/55">
                       Manufacturer: {brand.manufacturer}
                     </p>
                   )}
                   {brand.description && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="mt-2 text-sm text-white/65">
                       {brand.description}
                     </p>
                   )}
@@ -184,13 +184,13 @@ export default function BrandsPage() {
 
                 {/* Contact Info */}
                 {brand.contactInfo && (
-                  <div className="text-xs space-y-1 p-2 bg-gray-50 rounded">
+                  <div className="space-y-1 rounded-xl border border-white/5 bg-[#1C1C1E] p-2 text-xs">
                     {brand.contactInfo.email && (
                       <p>
-                        <span className="text-gray-600">Email:</span>{" "}
+                        <span className="text-white/55">Email:</span>{" "}
                         <a
                           href={`mailto:${brand.contactInfo.email}`}
-                          className="text-blue-600"
+                          className="text-[#0A84FF]"
                         >
                           {brand.contactInfo.email}
                         </a>
@@ -198,18 +198,18 @@ export default function BrandsPage() {
                     )}
                     {brand.contactInfo.phone && (
                       <p>
-                        <span className="text-gray-600">Phone:</span>{" "}
+                        <span className="text-white/55">Phone:</span>{" "}
                         {brand.contactInfo.phone}
                       </p>
                     )}
                     {brand.contactInfo.website && (
                       <p>
-                        <span className="text-gray-600">Website:</span>{" "}
+                        <span className="text-white/55">Website:</span>{" "}
                         <a
                           href={brand.contactInfo.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600"
+                          className="text-[#0A84FF]"
                         >
                           {brand.contactInfo.website}
                         </a>
@@ -218,19 +218,19 @@ export default function BrandsPage() {
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-2 border-t">
+                <div className="flex gap-2 border-t border-white/5 pt-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 border-white/10 bg-[#1C1C1E] text-white/90 hover:bg-white/[0.08]"
                     onClick={() => handleOpenDialog(brand)}
                   >
                     Edit
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
-                    className="flex-1"
+                    variant="outline"
+                    className="flex-1 border-white/10 bg-[#1C1C1E] text-white/90 hover:bg-white/[0.08]"
                     onClick={() => handleDelete(brand._id)}
                   >
                     Delete
@@ -245,15 +245,15 @@ export default function BrandsPage() {
       {/* Dialog */}
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <Card className="w-full max-w-md p-6 my-8">
-              <h2 className="text-2xl font-bold mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm">
+            <Card className="my-8 w-full max-w-md rounded-2xl border border-white/10 bg-[#1C1C1E] p-6 text-white">
+              <h2 className="mb-4 text-2xl font-bold text-white">
                 {editingId ? "Edit Brand" : "Add New Brand"}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="mb-1 block text-sm font-medium text-white/85">
                     Brand Name *
                   </label>
                   <Input
@@ -268,7 +268,7 @@ export default function BrandsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="mb-1 block text-sm font-medium text-white/85">
                     Manufacturer
                   </label>
                   <Input
@@ -282,7 +282,7 @@ export default function BrandsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="mb-1 block text-sm font-medium text-white/85">
                     Description
                   </label>
                   <Input
@@ -295,12 +295,12 @@ export default function BrandsPage() {
                   />
                 </div>
 
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold mb-3">Contact Information</h3>
+                <div className="border-t border-white/10 pt-4">
+                  <h3 className="mb-3 font-semibold text-white/90">Contact Information</h3>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">
+                      <label className="mb-1 block text-sm font-medium text-white/85">
                         Email
                       </label>
                       <Input
@@ -314,7 +314,7 @@ export default function BrandsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">
+                      <label className="mb-1 block text-sm font-medium text-white/85">
                         Phone
                       </label>
                       <Input
@@ -328,7 +328,7 @@ export default function BrandsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">
+                      <label className="mb-1 block text-sm font-medium text-white/85">
                         Website
                       </label>
                       <Input
@@ -343,17 +343,17 @@ export default function BrandsPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex gap-2 border-t border-white/10 pt-4">
                   <Button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 rounded-xl bg-[#0A84FF] text-white hover:brightness-110"
                   >
                     Save Brand
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
                     onClick={() => setIsOpen(false)}
                   >
                     Cancel

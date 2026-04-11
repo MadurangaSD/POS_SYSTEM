@@ -100,12 +100,12 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fadeIn bg-[hsl(var(--background))]">
-      <Card className="w-full max-w-2xl surface animate-slideIn">
-        <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-          <CardTitle className="text-2xl text-[hsl(var(--foreground))] flex items-center gap-3">
-            <div className="p-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))]">
-              <svg className="w-6 h-6 text-[hsl(var(--primary))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fadeIn">
+      <Card className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#1C1C1E] animate-slideIn">
+        <CardHeader className="border-b border-white/5 bg-[#1C1C1E]">
+          <CardTitle className="flex items-center gap-3 text-2xl text-white">
+            <div className="rounded-xl border border-white/10 bg-[#242426] p-2">
+              <svg className="w-6 h-6 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
@@ -114,21 +114,21 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           {/* Total Amount */}
-          <div className="bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] p-6 rounded-xl text-center">
-            <p className="text-sm text-[hsl(var(--muted-foreground))] mb-1 font-medium">Total</p>
-            <p className="text-5xl font-bold text-[hsl(var(--primary))]">{formatCurrency(total)}</p>
+          <div className="rounded-xl border border-white/10 bg-[#242426] p-6 text-center">
+            <p className="mb-1 text-sm font-medium text-white/55">Total</p>
+            <p className="text-5xl font-bold text-white">{formatCurrency(total)}</p>
           </div>
 
           {/* Payment Method Selection */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-[hsl(var(--foreground))]">Payment Method</p>
+            <p className="text-sm font-medium text-white/85">Payment Method</p>
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant={paymentMethod === "cash" ? "default" : "outline"}
                 className={`h-16 text-lg font-semibold transition-all duration-200 ${
                   paymentMethod === "cash"
-                    ? "bg-[hsl(var(--primary))] text-[hsl(var(--background))]"
-                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                    ? "bg-[#0A84FF] text-white"
+                    : "border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
                 }`}
                 onClick={() => setPaymentMethod("cash")}
               >
@@ -138,8 +138,8 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
                 variant={paymentMethod === "card" ? "default" : "outline"}
                 className={`h-16 text-lg font-semibold transition-all duration-200 ${
                   paymentMethod === "card"
-                    ? "bg-[hsl(var(--primary))] text-[hsl(var(--background))]"
-                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                    ? "bg-[#0A84FF] text-white"
+                    : "border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
                 }`}
                 onClick={() => setPaymentMethod("card")}
               >
@@ -149,8 +149,8 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
                 variant={paymentMethod === "qr" ? "default" : "outline"}
                 className={`h-16 text-lg font-semibold transition-all duration-200 ${
                   paymentMethod === "qr"
-                    ? "bg-[hsl(var(--primary))] text-[hsl(var(--background))]"
-                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                    ? "bg-[#0A84FF] text-white"
+                    : "border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
                 }`}
                 onClick={() => setPaymentMethod("qr")}
               >
@@ -164,19 +164,19 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-[hsl(var(--foreground))]">Amount Received</label>
+                  <label className="text-sm font-medium text-white/85">Amount Received</label>
                   <div className="relative mt-1">
                     <Input
                       type="text"
                       value={cashReceived}
                       onChange={(e) => setCashReceived(e.target.value)}
-                      className="h-14 text-2xl font-bold pr-24 border-[hsl(var(--border))] bg-[hsl(var(--input))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]"
+                      className="h-14 pr-24 text-2xl font-bold"
                       placeholder="0.00"
                     />
                     <Button
                       size="sm"
                       variant="outline"
-                      className="absolute right-2 top-2 px-3 py-1 rounded-lg border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                      className="absolute right-2 top-2 rounded-lg border-white/10 bg-[#1C1C1E] px-3 py-1 text-white/90 hover:bg-white/[0.08]"
                       onClick={handleQuickAmount}
                     >
                       Exact
@@ -184,12 +184,12 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-[hsl(var(--foreground))]">Change</label>
+                  <label className="text-sm font-medium text-white/85">Change</label>
                   <div
                     className={`h-14 mt-1 flex items-center justify-center text-2xl font-bold rounded-xl border ${
                       change >= 0
-                        ? "bg-[hsl(var(--secondary))] text-[hsl(var(--primary))] border-[hsl(var(--border))]"
-                        : "bg-[color-mix(in_srgb,hsl(var(--destructive))_10%,transparent)] text-[hsl(var(--destructive))] border-[color-mix(in_srgb,hsl(var(--destructive))_30%,transparent)]"
+                        ? "border-white/10 bg-[#242426] text-white"
+                        : "border-white/10 bg-[#242426] text-white"
                     }`}
                   >
                     {formatCurrency(change >= 0 ? change : 0)}
@@ -199,13 +199,13 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
 
               {/* Numeric Keypad */}
               <div>
-                <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground))]">Quick Entry</p>
+                <p className="mb-2 text-sm font-medium text-white/85">Quick Entry</p>
                 <div className="grid grid-cols-4 gap-2">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0, "⌫"].map((key) => (
                     <Button
                       key={key}
                       variant="outline"
-                      className="h-14 text-xl font-semibold border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-all duration-200"
+                      className="h-14 border-white/10 bg-[#242426] text-xl font-semibold text-white/90 transition-all duration-200 hover:bg-white/[0.08]"
                       onClick={() =>
                         key === "⌫" ? handleNumPad("backspace") : handleNumPad(key.toString())
                       }
@@ -215,7 +215,7 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
                   ))}
                   <Button
                     variant="outline"
-                    className="h-14 text-sm col-span-4 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[color-mix(in_srgb,hsl(var(--destructive))_12%,transparent)] hover:border-[hsl(var(--destructive))] hover:text-[hsl(var(--destructive))] font-semibold"
+                    className="col-span-4 h-14 border-white/10 bg-[#242426] text-sm font-semibold text-white/90 hover:bg-white/[0.08]"
                     onClick={() => handleNumPad("clear")}
                   >
                     Clear
@@ -227,11 +227,11 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
 
           {/* Card/QR Payment Info */}
           {(paymentMethod === "card" || paymentMethod === "qr") && (
-            <div className="bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] p-6 rounded-xl text-center">
-              <p className="text-lg font-medium mb-2 text-[hsl(var(--foreground))]">
+            <div className="rounded-xl border border-white/10 bg-[#242426] p-6 text-center">
+              <p className="mb-2 text-lg font-medium text-white/90">
                 {paymentMethod === "card" ? "Swipe or Insert Card" : "Scan QR Code"}
               </p>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              <p className="text-sm text-white/60">
                 {paymentMethod === "card"
                   ? "Waiting for card machine confirmation..."
                   : "Customer should scan the QR code to complete payment"}
@@ -256,7 +256,7 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
             <Button 
               variant="outline" 
               size="lg" 
-              className="h-14 text-lg font-semibold border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]" 
+              className="h-14 border-white/10 bg-[#242426] text-lg font-semibold text-white/90 hover:bg-white/[0.08]" 
               onClick={onClose} 
               disabled={loading}
             >
@@ -264,7 +264,7 @@ export default function PaymentModal({ total, cart, discount, onClose, onComplet
             </Button>
             <Button
               size="lg"
-              className="h-14 text-lg font-semibold bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110"
+              className="h-14 bg-[#0A84FF] text-lg font-semibold text-white hover:brightness-110"
               onClick={handleConfirmPayment}
               disabled={loading || (paymentMethod === "cash" && (!cashReceived || change < 0))}
             >

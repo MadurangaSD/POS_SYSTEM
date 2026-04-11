@@ -38,6 +38,8 @@ api.interceptors.response.use(
         // Token expired or invalid for protected routes
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        localStorage.removeItem('username');
         window.location.href = '/';
       }
     }
@@ -176,6 +178,62 @@ export const stockAPI = {
   
   getStockValue: async () => {
     const response = await api.get('/stock/value');
+    return response.data;
+  },
+};
+
+// Categories API
+export const categoriesAPI = {
+  getAll: async () => {
+    const response = await api.get('/categories');
+    return response.data;
+  },
+  
+  getById: async (id) => {
+    const response = await api.get(`/categories/${id}`);
+    return response.data;
+  },
+  
+  create: async (categoryData) => {
+    const response = await api.post('/categories', categoryData);
+    return response.data;
+  },
+  
+  update: async (id, categoryData) => {
+    const response = await api.put(`/categories/${id}`, categoryData);
+    return response.data;
+  },
+  
+  delete: async (id) => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
+};
+
+// Brands API
+export const brandsAPI = {
+  getAll: async () => {
+    const response = await api.get('/brands');
+    return response.data;
+  },
+  
+  getById: async (id) => {
+    const response = await api.get(`/brands/${id}`);
+    return response.data;
+  },
+  
+  create: async (brandData) => {
+    const response = await api.post('/brands', brandData);
+    return response.data;
+  },
+  
+  update: async (id, brandData) => {
+    const response = await api.put(`/brands/${id}`, brandData);
+    return response.data;
+  },
+  
+  delete: async (id) => {
+    const response = await api.delete(`/brands/${id}`);
     return response.data;
   },
 };

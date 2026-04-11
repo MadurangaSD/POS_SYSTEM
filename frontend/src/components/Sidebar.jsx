@@ -13,7 +13,7 @@ import {
   BarChart3,
   LogOut,
   Tag,
-  Tag2,
+  Tags,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
@@ -29,7 +29,7 @@ const Sidebar = () => {
     { label: t("dashboard.title"), icon: LayoutDashboard, href: "/admin/dashboard" },
     { label: t("products.title"), icon: Package, href: "/admin/products" },
     { label: "Categories", icon: Tag, href: "/admin/categories" },
-    { label: "Brands", icon: Tag2, href: "/admin/brands" },
+    { label: "Brands", icon: Tags, href: "/admin/brands" },
     { label: t("inventory.title"), icon: Boxes, href: "/admin/inventory" },
     { label: t("sales.salesHistory"), icon: ShoppingCart, href: "/admin/sales-history" },
     { label: t("users.title"), icon: Users, href: "/admin/users" },
@@ -52,7 +52,7 @@ const Sidebar = () => {
           variant="outline"
           size="icon"
           onClick={() => setIsOpen(!isOpen)}
-          className="rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[0_12px_30px_-20px_rgba(0,0,0,0.8)]"
+          className="rounded-xl border border-white/5 bg-[#2C2C2E] text-white/90 shadow-lg transition-all duration-200 hover:bg-white/10"
         >
           {isOpen ? <X size={22} /> : <Menu size={22} />}
         </Button>
@@ -60,22 +60,22 @@ const Sidebar = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] text-[hsl(var(--sidebar-foreground))] shadow-[0_20px_80px_-40px_rgba(0,0,0,0.8)] transition-all duration-250 ${
-          isOpen ? "w-72" : "w-0 overflow-hidden"
-        } lg:w-72`}
+        className={`fixed top-0 left-0 z-40 h-screen border-r border-white/5 bg-[#2C2C2E] font-[Inter] text-white/90 shadow-xl transition-all duration-200 ${
+          isOpen ? "w-64" : "w-0 overflow-hidden"
+        } lg:w-64`}
       >
         {/* Logo Section */}
-        <div className="p-6 border-b border-[hsl(var(--sidebar-border))]">
+        <div className="border-b border-white/5 p-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent))] p-2">
-              <Logo size={32} className="text-[hsl(var(--sidebar-foreground))]" />
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
+              <Logo size={32} className="text-white/95" />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[hsl(var(--muted-foreground))]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/55">
                 {t("dashboard.overview")}
               </p>
-              <h2 className="text-lg font-semibold">POS System</h2>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Admin Panel</p>
+              <h2 className="text-base font-medium text-white">POS System</h2>
+              <p className="text-xs text-white/55">Admin Panel</p>
             </div>
           </div>
         </div>
@@ -92,10 +92,10 @@ const Sidebar = () => {
                 to={item.href}
                 onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
                 className={cn(
-                  "group relative flex items-center gap-4 rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-200",
+                  "group relative flex items-center gap-3 rounded-xl border px-3.5 py-3 text-sm font-medium transition-all duration-200",
                   active
-                    ? "border-[hsl(var(--primary))] bg-[color-mix(in_srgb,hsl(var(--primary))_12%,hsl(var(--sidebar))_88%)] text-[hsl(var(--sidebar-foreground))] shadow-[0_18px_40px_-30px_rgba(34,211,238,0.7)]"
-                    : "border-transparent text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--sidebar-border))] hover:bg-[hsl(var(--sidebar-accent))]"
+                    ? "border-white/10 bg-white/[0.07] text-white"
+                    : "border-transparent text-white/70 hover:border-white/10 hover:bg-white/[0.05] hover:text-white"
                 )}
                 style={{ animationDelay: `${index * 40}ms` }}
               >
@@ -103,14 +103,14 @@ const Sidebar = () => {
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
                     active
-                      ? "border-[hsl(var(--primary))] text-[hsl(var(--primary))]"
-                      : "border-[hsl(var(--sidebar-border))] text-[hsl(var(--sidebar-foreground))] group-hover:text-[hsl(var(--primary))]"
+                      ? "border-white/20 text-white"
+                      : "border-white/10 text-white/75 group-hover:text-white"
                   )}
                 >
                   <Icon size={20} strokeWidth={2.3} />
                 </div>
-                <span className="font-medium tracking-wide">{item.label}</span>
-                {active && <div className="ml-auto h-6 w-0.75 rounded-full bg-[hsl(var(--primary))]" />}
+                <span className="font-medium tracking-wide text-inherit">{item.label}</span>
+                {active && <div className="ml-auto h-6 w-0.5 rounded-full bg-white/80" />}
               </Link>
             );
           })}
@@ -119,23 +119,23 @@ const Sidebar = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="group relative flex w-full items-center gap-4 rounded-xl border border-transparent bg-[color-mix(in_srgb,hsl(var(--destructive))_10%,hsl(var(--sidebar))_90%)] px-4 py-3 text-sm font-semibold text-[hsl(var(--destructive))] transition-all duration-200 hover:border-[hsl(var(--destructive))] hover:bg-[color-mix(in_srgb,hsl(var(--destructive))_16%,hsl(var(--sidebar))_84%)] hover:shadow-[0_18px_40px_-28px_rgba(248,113,113,0.6)]"
+            className="group relative flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-3.5 py-3 text-sm font-medium text-white/80 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06] hover:text-white"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[hsl(var(--destructive))] text-[hsl(var(--destructive))]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/80">
               <LogOut size={20} strokeWidth={2.3} />
             </div>
-            <span className="font-semibold tracking-wide">{t("auth.logout")}</span>
+            <span className="font-medium tracking-wide">{t("auth.logout")}</span>
           </button>
         </nav>
 
         {/* Bottom Section */}
-        <div className="space-y-3 border-t border-[hsl(var(--sidebar-border))] p-4">
-          <div className="rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent))] p-3">
-            <p className="text-xs uppercase tracking-[0.32em] text-[hsl(var(--muted-foreground))]">{t("common.status") || "Status"}</p>
-            <p className="text-sm font-semibold text-[hsl(var(--sidebar-foreground))]">
+        <div className="space-y-3 border-t border-white/5 p-4">
+          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-3">
+            <p className="text-xs uppercase tracking-[0.28em] text-white/50">{t("common.status") || "Status"}</p>
+            <p className="text-sm font-medium text-white/90">
               {localStorage.getItem("username") || "Admin"}
             </p>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] capitalize">
+            <p className="text-xs text-white/55 capitalize">
               {localStorage.getItem("role") || "admin"}
             </p>
           </div>
@@ -143,7 +143,7 @@ const Sidebar = () => {
           <Button
             onClick={handleLogout}
             variant="destructive"
-            className="button-hover w-full h-11 rounded-xl font-semibold bg-[hsl(var(--destructive))] text-white shadow-[0_18px_40px_-28px_rgba(248,113,113,0.6)] hover:brightness-110"
+            className="button-hover h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] font-medium text-white transition-all duration-200 hover:bg-white/[0.12]"
           >
             <LogOut size={18} />
             {t("auth.logout")}
@@ -154,7 +154,7 @@ const Sidebar = () => {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-[hsl(var(--background))] lg:hidden z-30 animate-fadeIn"
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden animate-fadeIn"
           onClick={() => setIsOpen(false)}
         />
       )}

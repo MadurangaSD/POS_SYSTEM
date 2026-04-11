@@ -70,7 +70,7 @@ class BarcodeService {
         },
       };
     } catch (error) {
-      console.log("Open Food Facts lookup failed:", error.message);
+      console.error("Open Food Facts lookup failed:", error.message);
       return null;
     }
   }
@@ -121,7 +121,7 @@ class BarcodeService {
         },
       };
     } catch (error) {
-      console.log("UPCitemdb lookup failed:", error.message);
+      console.error("UPCitemdb lookup failed:", error.message);
       return null;
     }
   }

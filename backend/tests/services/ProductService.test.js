@@ -1,116 +1,92 @@
-const ProductService = require("../../src/services/ProductService");
-const { getDatabase, initializeDatabase, seedDatabase } = require("../../src/models/database");
+const mockProductFind = jest.fn();
+const mockProductFindById = jest.fn();
+const mockProductFindOne = jest.fn();
+const mockProductFindByIdAndDelete = jest.fn();
 
-// Setup and teardown
-beforeAll(() => {
-  initializeDatabase();
-  seedDatabase();
-});
+const MockProduct = jest.fn().mockImplementation((data) => ({
+  ...data,
+  _id: "new-product-id",
+  save: jest.fn().mockResolvedValue(),
+}));
+
+MockProduct.find = mockProductFind;
+MockProduct.findById = mockProductFindById;
+MockProduct.findOne = mockProductFindOne;
+MockProduct.findByIdAndDelete = mockProductFindByIdAndDelete;
+
+jest.mock("../../src/models/database", () => ({
+  Product: MockProduct,
+}));
+
+const ProductService = require("../../src/services/ProductService");
 
 describe("ProductService", () => {
-  describe("getAll", () => {
-    test("should return all products", () => {
-      const products = ProductService.getAll();
-      expect(Array.isArray(products)).toBe(true);
-      expect(products.length).toBeGreaterThan(0);
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    test("should search products by name", () => {
-      const products = ProductService.getAll("Coca");
-      expect(products.length).toBeGreaterThan(0);
-      expect(products[0].name).toContain("Coca");
-    });
+  test("getAll returns products", async () => {
+    const products = [{ _id: "p1", name: "Coca Cola" }];
+    const sort = jest.fn().mockResolvedValue(products);
+    mockProductFind.mockReturnValue({ sort });
 
-    test("should filter by category", () => {
-      const products = ProductService.getAll("", "Beverages");
-      expect(products.length).toBeGreaterThan(0);
-      products.forEach((p) => expect(p.category).toBe("Beverages"));
+    const result = await ProductService.getAll();
+
+    expect(mockProductFind).toHaveBeenCalledWith({});
+    expect(sort).toHaveBeenCalledWith({ name: 1 });
+    expect(result).toEqual(products);
+  });
+
+  test("getAll applies search and category filters", async () => {
+    const sort = jest.fn().mockResolvedValue([]);
+    mockProductFind.mockReturnValue({ sort });
+
+    await ProductService.getAll("coca", "cat-1");
+
+    expect(mockProductFind).toHaveBeenCalledWith({
+      $or: [
+        { name: { $regex: "coca", $options: "i" } },
+        { barcode: { $regex: "coca", $options: "i" } },
+      ],
+      category: "cat-1",
     });
   });
 
-  describe("getById", () => {
-    test("should return product by id", () => {
-      const products = ProductService.getAll();
-      const product = ProductService.getById(products[0].id);
-      expect(product).toBeDefined();
-      expect(product.id).toBe(products[0].id);
-    });
-
-    test("should throw error for invalid id", () => {
-      expect(() => {
-        ProductService.getById("invalid-id");
-      }).toThrow();
-    });
+  test("getById throws on missing product", async () => {
+    mockProductFindById.mockResolvedValue(null);
+    await expect(ProductService.getById("missing")).rejects.toMatchObject({ status: 404 });
   });
 
-  describe("getByBarcode", () => {
-    test("should return product by barcode", () => {
-      const product = ProductService.getByBarcode("8851234567890");
-      expect(product).toBeDefined();
-      expect(product.barcode).toBe("8851234567890");
-    });
-
-    test("should throw error for invalid barcode", () => {
-      expect(() => {
-        ProductService.getByBarcode("invalid-barcode");
-      }).toThrow();
-    });
+  test("create validates required fields", async () => {
+    await expect(ProductService.create({ name: "No prices" })).rejects.toMatchObject({ status: 400 });
   });
 
-  describe("create", () => {
-    test("should create a new product", () => {
-      const newProduct = ProductService.create({
-        name: "Test Product",
-        barcode: "TEST-BARCODE-123",
-        cost_price: 100,
-        selling_price: 150,
-        category: "Test",
-        stock_quantity: 10,
-      });
-
-      expect(newProduct).toBeDefined();
-      expect(newProduct.name).toBe("Test Product");
-      expect(newProduct.barcode).toBe("TEST-BARCODE-123");
-    });
-
-    test("should throw error for duplicate barcode", () => {
-      expect(() => {
-        ProductService.create({
-          name: "Duplicate Barcode Product",
-          barcode: "8851234567890",
-          cost_price: 100,
-          selling_price: 150,
-        });
-      }).toThrow();
-    });
-
-    test("should throw error for missing required fields", () => {
-      expect(() => {
-        ProductService.create({
-          name: "Missing Price",
-          barcode: "TEST-123",
-        });
-      }).toThrow();
-    });
+  test("create prevents duplicate barcode", async () => {
+    mockProductFindOne.mockResolvedValue({ _id: "existing" });
+    await expect(
+      ProductService.create({ name: "Test", barcode: "123", costPrice: 10, sellingPrice: 20 })
+    ).rejects.toMatchObject({ status: 400 });
   });
 
-  describe("update", () => {
-    test("should update product", () => {
-      const products = ProductService.getAll();
-      const original = products[0];
+  test("update saves product", async () => {
+    const save = jest.fn().mockResolvedValue();
+    const existingProduct = { _id: "p1", barcode: "b1", save, name: "Old" };
+    mockProductFindById.mockResolvedValue(existingProduct);
+    mockProductFindOne.mockResolvedValue(null);
 
-      const updated = ProductService.update(original.id, {
-        selling_price: 999,
-      });
+    const result = await ProductService.update("p1", { name: "New" });
 
-      expect(updated.selling_price).toBe(999);
-    });
+    expect(save).toHaveBeenCalled();
+    expect(result.name).toBe("New");
   });
 
-  describe("getLowStock", () => {
-    test("should return low stock products", () => {
-      const lowStock = ProductService.getLowStock(50);
-      expect(Array.isArray(lowStock)).toBe(true);
-    });
+  test("delete removes product", async () => {
+    mockProductFindById.mockResolvedValue({ _id: "p1" });
+    mockProductFindByIdAndDelete.mockResolvedValue({});
+
+    const result = await ProductService.delete("p1");
+
+    expect(mockProductFindByIdAndDelete).toHaveBeenCalledWith("p1");
+    expect(result).toEqual({ message: "Product deleted" });
   });
 });

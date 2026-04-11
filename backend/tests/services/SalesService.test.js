@@ -1,125 +1,126 @@
-const SalesService = require("../../src/services/SalesService");
-const ProductService = require("../../src/services/ProductService");
-const { initializeDatabase, seedDatabase } = require("../../src/models/database");
+const mockProductFindById = jest.fn();
+const mockSaleCreate = jest.fn();
+const mockSaleFindById = jest.fn();
+const mockSaleFind = jest.fn();
+const mockSaleAggregate = jest.fn();
+const mockStockAdjustmentCreate = jest.fn();
 
-beforeAll(() => {
-  initializeDatabase();
-  seedDatabase();
-});
+const mockSession = {
+  startTransaction: jest.fn(),
+  commitTransaction: jest.fn(),
+  abortTransaction: jest.fn(),
+  endSession: jest.fn(),
+};
+
+jest.mock("../../src/models/database", () => ({
+  Product: {
+    findById: mockProductFindById,
+  },
+  Sale: {
+    startSession: jest.fn().mockResolvedValue(mockSession),
+    create: mockSaleCreate,
+    findById: mockSaleFindById,
+    find: mockSaleFind,
+    aggregate: mockSaleAggregate,
+  },
+  StockAdjustment: {
+    create: mockStockAdjustmentCreate,
+  },
+}));
+
+jest.mock("../../src/utils/helpers", () => ({
+  generateBillNumber: jest.fn(() => "BILL-TEST-1"),
+  roundToTwo: jest.fn((value) => Math.round((value + Number.EPSILON) * 100) / 100),
+}));
+
+const SalesService = require("../../src/services/SalesService");
 
 describe("SalesService", () => {
-  let testUserId = "test-user-123";
-  let testProduct;
-
-  beforeAll(() => {
-    testProduct = ProductService.getAll()[0];
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe("createSale", () => {
-    test("should create a sale and decrement stock", () => {
-      const originalStock = testProduct.stock_quantity;
-
-      const sale = SalesService.createSale(
-        testUserId,
-        [
-          {
-            product_id: testProduct.id,
-            quantity: 5,
-          },
-        ],
-        0,
-        "cash",
-        1000
-      );
-
-      expect(sale).toBeDefined();
-      expect(sale.id).toBeDefined();
-      expect(sale.bill_number).toBeDefined();
-      expect(sale.items.length).toBe(1);
-      expect(sale.total).toBeGreaterThan(0);
-
-      // Verify stock was decremented
-      const updatedProduct = ProductService.getById(testProduct.id);
-      expect(updatedProduct.stock_quantity).toBe(originalStock - 5);
+  test("createSale creates sale and adjusts stock", async () => {
+    const save = jest.fn().mockResolvedValue();
+    mockProductFindById.mockResolvedValue({
+      _id: "p1",
+      name: "Coca Cola",
+      barcode: "123",
+      quantity: 10,
+      sellingPrice: 100,
+      save,
     });
+    mockSaleCreate.mockResolvedValue([
+      {
+        _id: "sale1",
+        billNumber: "BILL-1",
+        saleDate: new Date(),
+      },
+    ]);
 
-    test("should throw error if stock is insufficient", () => {
-      expect(() => {
-        SalesService.createSale(
-          testUserId,
-          [
-            {
-              product_id: testProduct.id,
-              quantity: 10000, // More than available
-            },
-          ],
-          0,
-          "cash"
-        );
-      }).toThrow();
-    });
+    const result = await SalesService.createSale(
+      "u1",
+      [{ product_id: "p1", quantity: 2 }],
+      0,
+      "cash",
+      500
+    );
 
-    test("should calculate change for cash payments", () => {
-      const sale = SalesService.createSale(
-        testUserId,
-        [
-          {
-            product_id: testProduct.id,
-            quantity: 1,
-          },
-        ],
-        0,
-        "cash",
-        500
-      );
-
-      expect(sale.change).toBeDefined();
-      expect(sale.change).toBe(500 - sale.total);
-    });
+    expect(save).toHaveBeenCalled();
+    expect(mockStockAdjustmentCreate).toHaveBeenCalled();
+    expect(result.billNumber).toBe("BILL-1");
+    expect(result.total).toBe(200);
   });
 
-  describe("getSale", () => {
-    test("should retrieve sale by id", () => {
-      const sale = SalesService.createSale(
-        testUserId,
-        [
-          {
-            product_id: testProduct.id,
-            quantity: 2,
-          },
-        ],
-        0,
-        "card"
-      );
-
-      const retrieved = SalesService.getSale(sale.id);
-      expect(retrieved).toBeDefined();
-      expect(retrieved.id).toBe(sale.id);
-      expect(retrieved.items).toBeDefined();
+  test("createSale rejects insufficient stock", async () => {
+    mockProductFindById.mockResolvedValue({
+      _id: "p1",
+      name: "Coca Cola",
+      quantity: 1,
+      sellingPrice: 100,
     });
 
-    test("should throw error for non-existent sale", () => {
-      expect(() => {
-        SalesService.getSale("non-existent-id");
-      }).toThrow();
-    });
+    await expect(
+      SalesService.createSale("u1", [{ product_id: "p1", quantity: 5 }], 0, "cash", 500)
+    ).rejects.toMatchObject({ status: 400 });
+    expect(mockSession.abortTransaction).toHaveBeenCalled();
   });
 
-  describe("getDailySalesReport", () => {
-    test("should get daily sales report", () => {
-      const today = new Date().toISOString().split("T")[0];
-      const report = SalesService.getDailySalesReport(today);
+  test("getSale returns populated sale", async () => {
+    const sale = { _id: "s1" };
+    mockSaleFindById.mockReturnValue({ populate: jest.fn().mockResolvedValue(sale) });
 
-      expect(report).toBeDefined();
-      expect(report.total_bills).toBeDefined();
-      expect(report.total_sales).toBeDefined();
-    });
+    const result = await SalesService.getSale("s1");
+    expect(result).toEqual(sale);
   });
 
-  describe("getTopProducts", () => {
-    test("should get top products", () => {
-      const topProducts = SalesService.getTopProducts(5);
-      expect(Array.isArray(topProducts)).toBe(true);
-    });
+  test("getDailySalesReport returns aggregates", async () => {
+    mockSaleFind.mockResolvedValue([
+      { total: 100, paymentMethod: "cash" },
+      { total: 50, paymentMethod: "card" },
+    ]);
+
+    const report = await SalesService.getDailySalesReport("2026-01-01");
+
+    expect(report.total_bills).toBe(2);
+    expect(report.total_sales).toBe(150);
+  });
+
+  test("getTopProducts maps aggregate output", async () => {
+    mockSaleAggregate.mockResolvedValue([
+      {
+        _id: "p1",
+        productName: "Coca Cola",
+        barcode: "123",
+        units_sold: 5,
+        total_revenue: 500,
+        avg_price: 100,
+      },
+    ]);
+
+    const top = await SalesService.getTopProducts(5, 30);
+
+    expect(top[0].name).toBe("Coca Cola");
+    expect(top[0].units_sold).toBe(5);
   });
 });

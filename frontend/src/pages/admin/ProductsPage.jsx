@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Edit, Trash2, Package, ArrowLeft, Printer, Scan } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { productsAPI } from "../../services/api";
+import { productsAPI, categoriesAPI, brandsAPI } from "../../services/api";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "../../lib/utils";
@@ -83,8 +83,8 @@ export default function ProductsPage() {
 
   const loadCategories = async () => {
     try {
-      const response = await productsAPI.get("/api/categories");
-      setCategories(response.data || []);
+      const data = await categoriesAPI.getAll();
+      setCategories(data || []);
     } catch (error) {
       console.error("Error loading categories:", error);
       toast.error("Failed to load categories");
@@ -93,8 +93,8 @@ export default function ProductsPage() {
 
   const loadBrands = async () => {
     try {
-      const response = await productsAPI.get("/api/brands");
-      setBrands(response.data || []);
+      const data = await brandsAPI.getAll();
+      setBrands(data || []);
     } catch (error) {
       console.error("Error loading brands:", error);
       toast.error("Failed to load brands");
@@ -267,8 +267,40 @@ export default function ProductsPage() {
     }
   };
 
-  const filteredProducts = products;
-  const surfaceCardClass = "surface";
+  const getCategoryName = (productCategory) => {
+    if (!productCategory) return t('products.uncategorized', 'Uncategorized');
+
+    if (typeof productCategory === 'object' && productCategory.name) {
+      return productCategory.name;
+    }
+
+    const matchedCategory = categories.find((cat) => cat._id === productCategory);
+    return matchedCategory?.name || t('products.uncategorized', 'Uncategorized');
+  };
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredProducts = products.filter((product) => {
+    const productCategoryId =
+      typeof product.category === "object" ? product.category?._id : product.category;
+
+    const matchesCategory =
+      categoryFilter === "all" || String(productCategoryId || "") === String(categoryFilter);
+
+    if (!normalizedQuery) return matchesCategory;
+
+    const categoryName = getCategoryName(product.category).toLowerCase();
+    const matchesSearch =
+      String(product.name || "").toLowerCase().includes(normalizedQuery) ||
+      String(product.barcode || "").toLowerCase().includes(normalizedQuery) ||
+      String(product.sku || "").toLowerCase().includes(normalizedQuery) ||
+      String(product.supplier || "").toLowerCase().includes(normalizedQuery) ||
+      categoryName.includes(normalizedQuery);
+
+    return matchesCategory && matchesSearch;
+  });
+
+  const surfaceCardClass = "rounded-xl border border-white/5 bg-[#242426]";
   const lowStockCount = products.filter((product) => product.quantity <= product.reorderLevel).length;
   const categoryCount = new Set(products.map((product) => product.category)).size;
   const totalInventoryValue = products.reduce(
@@ -279,28 +311,28 @@ export default function ProductsPage() {
     {
       label: t('products.products'),
       value: products.length.toString(),
-      tone: 'blue',
+      tone: 'slate',
       isLoading: loading,
       helper: t('products.subtitle'),
     },
     {
       label: t('inventory.lowStock'),
       value: lowStockCount.toString(),
-      tone: 'rose',
+      tone: 'slate',
       isLoading: loading,
       helper: lowStockCount ? t('inventory.lowStockAlert', { count: lowStockCount }) : t('inventory.inStock'),
     },
     {
       label: t('products.category'),
       value: categoryCount.toString(),
-      tone: 'violet',
+      tone: 'slate',
       isLoading: loading,
       helper: t('products.allCategories'),
     },
     {
       label: t('inventory.inventoryValue'),
       value: formatCurrency(totalInventoryValue),
-      tone: 'emerald',
+      tone: 'slate',
       isLoading: loading,
       helper: 'Across catalog',
     },
@@ -310,7 +342,7 @@ export default function ProductsPage() {
     <Button
       key="products-back"
       variant="outline"
-      className="h-11 rounded-xl border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      className="h-11 rounded-xl border border-white/10 bg-[#2C2C2E] text-white/90 transition-all duration-200 hover:bg-white/[0.08]"
       onClick={() => navigate("/admin/dashboard")}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -318,7 +350,7 @@ export default function ProductsPage() {
     </Button>,
     <Button
       key="products-add"
-      className="h-11 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--background))] hover:brightness-110"
+      className="h-11 rounded-xl border border-white/10 bg-white/[0.1] text-white transition-all duration-200 hover:bg-white/[0.16]"
       onClick={() => handleOpenDialog()}
     >
       <Plus className="mr-2 h-4 w-4" />
@@ -327,7 +359,7 @@ export default function ProductsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white/90">
       <PageHeader
         icon={Package}
         title={t('products.title')}
@@ -341,35 +373,35 @@ export default function ProductsPage() {
         stats={headerStats}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-6 rounded-xl bg-[#1C1C1E]">
         <Card className={`${surfaceCardClass} overflow-hidden`}>
-          <CardHeader className="border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <CardHeader className="border-b border-white/5 bg-[#242426]">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white/95">
                 <Package className="h-5 w-5" />
-                {t('products.products')} ({products.length})
+                {t('products.products')} ({filteredProducts.length})
               </CardTitle>
               <div className="flex flex-wrap gap-2">
                 {/* Search */}
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
                   <Input
                     placeholder={t('products.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="relative z-10 h-10 rounded-xl border-white/10 bg-[#1C1C1E] pl-10 text-white placeholder:text-white/35 focus-visible:ring-[#0A84FF]"
                   />
                 </div>
                 {/* Category Filter */}
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="h-10 w-40 rounded-xl border-white/10 bg-[#1C1C1E] text-white/90">
                     <SelectValue placeholder={t('products.category')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border-white/10 bg-[#2C2C2E] text-white/90">
                     <SelectItem value="all">{t('products.allCategories')}</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      <SelectItem key={cat._id} value={cat._id}>
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -377,70 +409,70 @@ export default function ProductsPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-[#242426] p-0">
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="py-8 text-center text-white/55">
                 {t('common.loading')}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="py-8 text-center text-white/55">
                 {t('products.noProducts')}
               </div>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>{t('products.name')}</TableHead>
-                    <TableHead>{t('products.barcode')}</TableHead>
-                    <TableHead>{t('products.category')}</TableHead>
-                    <TableHead className="text-right">{t('products.cost')}</TableHead>
-                    <TableHead className="text-right">{t('products.sellingPrice')}</TableHead>
-                    <TableHead className="text-right">{t('products.stock')}</TableHead>
-                    <TableHead>{t('products.status')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                <TableHeader className="bg-[#242426]">
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="w-12 text-white/55"></TableHead>
+                    <TableHead className="text-white/55">{t('products.name')}</TableHead>
+                    <TableHead className="text-white/55">{t('products.barcode')}</TableHead>
+                    <TableHead className="text-white/55">{t('products.category')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('products.cost')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('products.sellingPrice')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('products.stock')}</TableHead>
+                    <TableHead className="text-white/55">{t('products.status')}</TableHead>
+                    <TableHead className="text-right text-white/55">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredProducts.map((product) => (
-                    <TableRow key={product._id}>
+                    <TableRow key={product._id} className="border-white/5 hover:bg-white/[0.03]">
                       <TableCell>
                         {product.imageUrl ? (
                           <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="h-10 w-10 object-cover rounded border"
+                            className="h-10 w-10 rounded-lg border border-white/10 object-cover"
                             onError={(e) => {
                               e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23f0f0f0" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="16" fill="%23999"%3E%3F%3C/text%3E%3C/svg%3E';
                             }}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] flex items-center justify-center">
-                            <Package className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]">
+                            <Package className="h-5 w-5 text-white/45" />
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell className="font-mono text-sm">
+                      <TableCell className="font-medium text-white/92">{product.name}</TableCell>
+                      <TableCell className="font-mono text-sm text-white/70">
                         {product.barcode}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {product.category?.name || 'Uncategorized'}
+                        <Badge variant="outline" className="border-white/10 bg-white/[0.03] text-white/80">
+                          {getCategoryName(product.category)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-white/85">
                         {formatCurrency(product.costPrice)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-white/95">
                         {formatCurrency(product.sellingPrice)}
                       </TableCell>
                       <TableCell className="text-right">
                         <span
                           className={
                             product.quantity <= product.reorderLevel
-                              ? "text-red-600 font-medium"
-                              : ""
+                              ? "font-semibold text-white"
+                              : "text-white/85"
                           }
                         >
                           {product.quantity}
@@ -448,11 +480,11 @@ export default function ProductsPage() {
                       </TableCell>
                       <TableCell>
                         {product.isActive ? (
-                          <Badge variant="default" className="bg-green-500">
+                          <Badge variant="default" className="border border-white/10 bg-white/[0.14] text-white">
                             {t('products.active')}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">{t('products.inactive')}</Badge>
+                          <Badge variant="secondary" className="border border-white/10 bg-white/[0.03] text-white/70">{t('products.inactive')}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -460,6 +492,7 @@ export default function ProductsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-white/75 hover:bg-white/[0.08] hover:text-white"
                             onClick={() => handleOpenDialog(product)}
                           >
                             <Edit className="h-4 w-4" />
@@ -467,6 +500,7 @@ export default function ProductsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-white/75 hover:bg-white/[0.08] hover:text-white"
                             onClick={() => {
                               setPrintingProduct(product);
                               setShowBarcodeDialog(true);
@@ -477,12 +511,13 @@ export default function ProductsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-white/75 hover:bg-white/[0.08] hover:text-white"
                             onClick={() => {
                               setDeletingProduct(product);
                               setShowDeleteDialog(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -497,7 +532,7 @@ export default function ProductsPage() {
 
       {/* Add/Edit Product Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? t('products.editProduct') : t('products.addNewProduct')}
@@ -511,7 +546,7 @@ export default function ProductsPage() {
 
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="col-span-2">
-              <label className="text-sm font-medium">{t('products.productName')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.productName')} *</label>
               <Input
                 value={formData.name}
                 onChange={(e) =>
@@ -522,7 +557,7 @@ export default function ProductsPage() {
             </div>
 
             <div className="col-span-2">
-              <label className="text-sm font-medium">{t('products.barcode')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.barcode')} *</label>
               <div className="flex gap-2">
                 <Input
                   value={formData.barcode}
@@ -533,6 +568,7 @@ export default function ProductsPage() {
                 <Button
                   type="button"
                   variant="outline"
+                  className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
                   onClick={handleBarcodeLookup}
                   disabled={lookingUpBarcode || !formData.barcode}
                 >
@@ -549,23 +585,23 @@ export default function ProductsPage() {
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-white/55">
                 {t('products.lookupHelp')}
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.category')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.category')} *</label>
               <Select
                 value={formData.category}
                 onValueChange={(value) =>
                   setFormData({ ...formData, category: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-[#242426]">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1C1C1E]">
                   {categories.map((cat) => (
                     <SelectItem key={cat._id} value={cat._id}>
                       {cat.name}
@@ -576,18 +612,17 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Brand</label>
+              <label className="text-sm font-medium text-white/85">Brand</label>
               <Select
                 value={formData.brand}
                 onValueChange={(value) =>
                   setFormData({ ...formData, brand: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-[#242426]">
                   <SelectValue placeholder="Select a brand (optional)" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                <SelectContent className="bg-[#1C1C1E]">
                   {brands.map((brand) => (
                     <SelectItem key={brand._id} value={brand._id}>
                       {brand.name}
@@ -598,7 +633,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.costPrice')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.costPrice')} *</label>
               <Input
                 type="number"
                 step="0.01"
@@ -611,7 +646,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.sellingPrice')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.sellingPrice')} *</label>
               <Input
                 type="number"
                 step="0.01"
@@ -624,7 +659,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.wholesalePrice')}</label>
+              <label className="text-sm font-medium text-white/85">{t('products.wholesalePrice')}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -637,7 +672,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.initialStock')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.initialStock')} *</label>
               <Input
                 type="number"
                 value={formData.quantity}
@@ -649,7 +684,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.reorderLevel')} *</label>
+              <label className="text-sm font-medium text-white/85">{t('products.reorderLevel')} *</label>
               <Input
                 type="number"
                 value={formData.reorderLevel}
@@ -661,7 +696,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.supplier')}</label>
+              <label className="text-sm font-medium text-white/85">{t('products.supplier')}</label>
               <Input
                 value={formData.supplier}
                 onChange={(e) =>
@@ -672,7 +707,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.sku')}</label>
+              <label className="text-sm font-medium text-white/85">{t('products.sku')}</label>
               <Input
                 value={formData.sku}
                 onChange={(e) =>
@@ -683,7 +718,7 @@ export default function ProductsPage() {
             </div>
 
             <div className="col-span-2">
-              <label className="text-sm font-medium">{t('products.imageUrl')}</label>
+              <label className="text-sm font-medium text-white/85">{t('products.imageUrl')}</label>
               <Input
                 value={formData.imageUrl}
                 onChange={(e) =>
@@ -704,7 +739,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">{t('products.expiryDate')}</label>
+              <label className="text-sm font-medium text-white/85">{t('products.expiryDate')}</label>
               <Input
                 type="date"
                 value={formData.expiryDate}
@@ -716,10 +751,10 @@ export default function ProductsPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
+            <Button variant="outline" className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]" onClick={handleCloseDialog}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSaveProduct}>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleSaveProduct}>
               {editingProduct ? t('products.updateProduct') : t('products.addProduct')}
             </Button>
           </DialogFooter>
@@ -728,7 +763,7 @@ export default function ProductsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border border-white/10 bg-[#1C1C1E] text-white">
           <DialogHeader>
             <DialogTitle>{t('products.deleteProduct')}</DialogTitle>
             <DialogDescription>
@@ -738,6 +773,7 @@ export default function ProductsPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="border-white/10 bg-[#242426] text-white/90 hover:bg-white/[0.08]"
               onClick={() => {
                 setShowDeleteDialog(false);
                 setDeletingProduct(null);
@@ -745,7 +781,7 @@ export default function ProductsPage() {
             >
               {t('common.cancel')}
             </Button>
-            <Button variant="destructive" onClick={handleDeleteProduct}>
+            <Button className="bg-[#0A84FF] text-white hover:brightness-110" onClick={handleDeleteProduct}>
               {t('common.delete')}
             </Button>
           </DialogFooter>

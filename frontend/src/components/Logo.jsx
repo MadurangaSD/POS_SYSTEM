@@ -1,4 +1,3 @@
-import React from "react";
 import { LOGO_SRC } from "@/config/brand";
 
 export default function Logo({ size = 48, className = "", src }) {

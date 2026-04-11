@@ -1,17 +1,19 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./components/ThemeProvider";
 import AdminLayout from "./layouts/AdminLayout";
-import LoginPage from "./pages/auth/LoginPage";
-import POSCheckoutPage from "./pages/pos/POSCheckoutPage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ProductsPage from "./pages/admin/ProductsPage";
-import SalesHistoryPage from "./pages/admin/SalesHistoryPage";
-import InventoryPage from "./pages/admin/InventoryPage";
-import UsersPage from "./pages/admin/UsersPage";
-import ReportsPage from "./pages/admin/ReportsPage";
-import CategoriesPage from "./pages/admin/CategoriesPage";
-import BrandsPage from "./pages/admin/BrandsPage";
+
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const POSCheckoutPage = lazy(() => import("./pages/pos/POSCheckoutPage"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const ProductsPage = lazy(() => import("./pages/admin/ProductsPage"));
+const SalesHistoryPage = lazy(() => import("./pages/admin/SalesHistoryPage"));
+const InventoryPage = lazy(() => import("./pages/admin/InventoryPage"));
+const UsersPage = lazy(() => import("./pages/admin/UsersPage"));
+const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
+const CategoriesPage = lazy(() => import("./pages/admin/CategoriesPage"));
+const BrandsPage = lazy(() => import("./pages/admin/BrandsPage"));
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -33,6 +35,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Toaster position="top-right" richColors />
+        <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
         <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -133,6 +136,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     </ThemeProvider>
   );
