@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Variant schema for product variations (sizes, colors, etc.)
 const variantSchema = new mongoose.Schema({
   size: {
     type: String,
@@ -11,11 +10,15 @@ const variantSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true,
+    default: undefined,
+    trim: true,
   },
   barcode: {
     type: String,
     unique: true,
-    required: [true, 'Variant barcode is required'],
+    sparse: true,
+    default: undefined,
+    trim: true,
   },
   costPrice: {
     type: Number,
@@ -44,7 +47,9 @@ const productSchema = new mongoose.Schema(
     },
     barcode: {
       type: String,
-      required: [true, 'Base barcode is required'],
+      unique: true,
+      sparse: true,
+      default: undefined,
       trim: true,
     },
     description: String,
@@ -52,11 +57,12 @@ const productSchema = new mongoose.Schema(
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
-      required: [true, 'Category is required'],
+      default: null,
     },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Brand',
+      default: null,
     },
     costPrice: {
       type: Number,
@@ -94,6 +100,8 @@ const productSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true,
+      default: undefined,
+      trim: true,
     },
     isActive: {
       type: Boolean,
@@ -102,11 +110,5 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Text index for name search
-productSchema.index({ name: 'text' });
-
-// Unique index for barcode
-productSchema.index({ barcode: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);

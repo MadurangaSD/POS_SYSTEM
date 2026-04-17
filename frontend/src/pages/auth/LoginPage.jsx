@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authAPI } from "../../services/api";
 import LanguageSelector from "../../components/LanguageSelector";
-import Logo from "@/components/Logo";
 import { SHOP_NAME } from "@/config/brand";
 
 export default function LoginPage() {
@@ -62,36 +60,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[hsl(var(--background))]">
-      <div className="app-backdrop" aria-hidden="true" />
-      <div className="app-noise" aria-hidden="true" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#121212]">
+      {/* Subtle animated background gradient */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-900/10 blur-3xl opacity-20"></div>
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-slate-900/10 blur-3xl opacity-20"></div>
+      </div>
 
+      {/* Language Selector */}
       <div className="absolute right-6 top-6 z-20">
         <LanguageSelector />
       </div>
 
-      <Card className="relative z-10 mx-4 w-full max-w-lg animate-scaleIn surface-strong">
-        <CardHeader className="space-y-4 pb-6">
-          <div className="mb-2 flex items-center justify-center">
-            <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[0_18px_40px_-28px_rgba(0,0,0,0.7)]">
-              <Logo size={64} className="text-[hsl(var(--primary))]" />
+      {/* Main Container - Premium Glassmorphism */}
+      <div className="relative z-10 mx-4 w-full max-w-md">
+        <div className="rounded-4xl border border-[#2a2a2a] bg-[#1a1a1a]/95 backdrop-blur-xl shadow-2xl">
+          {/* Header Section */}
+          <div className="space-y-6 border-b border-[#252525] px-8 py-12">
+            {/* Minimal Logo Branding */}
+            <div className="flex justify-center">
+              <div className="h-16 w-16 rounded-full border border-[#2a2a2a] bg-[#242426] flex items-center justify-center shadow-lg">
+                <div className="h-12 w-12 rounded-full border-2 border-[#0A84FF] flex items-center justify-center">
+                  <span className="text-xl font-bold text-[#0A84FF]">P</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Title and Subtitle */}
+            <div className="text-center space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight text-white">
+                Sign In
+              </h1>
+              <p className="text-sm text-gray-400 font-medium">
+                Welcome to {SHOP_NAME}
+              </p>
             </div>
           </div>
-          <CardTitle className="text-center text-3xl font-semibold tracking-tight text-[hsl(var(--foreground))]">
-            {SHOP_NAME}
-          </CardTitle>
-          <CardDescription className="text-center text-base text-[hsl(var(--muted-foreground))]">
-            {t('auth.enterCredentials')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pb-8">
-          
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-semibold text-slate-200">
-                {t('auth.username')}
-              </label>
-              <div className="relative">
+
+          {/* Form Section */}
+          <div className="px-8 py-10">
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* Username Field */}
+              <div className="space-y-3">
+                <label htmlFor="username" className="block text-sm font-semibold text-gray-300">
+                  {t('auth.username')}
+                </label>
                 <Input
                   id="username"
                   ref={usernameRef}
@@ -99,60 +112,61 @@ export default function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={t('auth.username')}
-                  className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--input))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))]"
+                  className="h-14 w-full rounded-2xl border border-[#2a2a2a] bg-[#202020] text-white placeholder:text-gray-500 focus:border-[#0A84FF] focus:ring-0 focus:outline-none transition-colors duration-200 px-5 text-base font-medium"
                   required
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-semibold text-slate-200">
-                {t('auth.password')}
-              </label>
-              <div className="relative">
+              {/* Password Field */}
+              <div className="space-y-3">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-300">
+                  {t('auth.password')}
+                </label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('auth.password')}
-                  className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--input))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))]"
+                  className="h-14 w-full rounded-2xl border border-[#2a2a2a] bg-[#202020] text-white placeholder:text-gray-500 focus:border-[#0A84FF] focus:ring-0 focus:outline-none transition-colors duration-200 px-5 text-base font-medium"
                   required
                 />
               </div>
-            </div>
 
-            {error && (
-              <div className="animate-slideIn flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
-                <svg className="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              className="h-12 w-full rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-base font-semibold shadow-[0_18px_40px_-28px_rgba(34,211,238,0.9)] hover:brightness-110"
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              {/* Error Message */}
+              {error && (
+                <div className="animate-slideIn flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+                  <svg className="h-5 w-5 shrink-0 mt-0.5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  {t('common.loading')}
-                </span>
-              ) : (
-                t('auth.login')
+                  <span className="text-sm font-medium text-red-400">{error}</span>
+                </div>
               )}
-            </Button>
-          </form>
 
-          {/* Numeric Keypad for Touch Screens */}
-          <div className="mt-8 border-t border-[hsl(var(--border))] pt-6">
-            <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              {/* Login Button */}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-14 w-full rounded-2xl bg-[#0A84FF] text-white text-base font-semibold shadow-lg hover:bg-[#0970CC] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {t('common.loading')}
+                  </span>
+                ) : (
+                  t('auth.login')
+                )}
+              </Button>
+            </form>
+          </div>
+
+          {/* Numeric Keypad Section */}
+          <div className="space-y-4 border-t border-[#252525] px-8 py-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-gray-500">
               Touch Screen Keypad
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -160,17 +174,14 @@ export default function LoginPage() {
                 <Button
                   key={num}
                   type="button"
-                  variant="outline"
-                  className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-xl font-bold text-[hsl(var(--foreground))] transition-all duration-200 hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                   onClick={() => handleNumericInput(num.toString())}
+                  className="h-12 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] text-lg font-bold text-white hover:border-[#0A84FF] hover:text-[#0A84FF] transition-all duration-150"
                 >
                   {num}
                 </Button>
               ))}
               <Button
                 type="button"
-                variant="outline"
-                className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-sm font-semibold text-[hsl(var(--foreground))] transition-all duration-200 hover:border-[hsl(var(--destructive))] hover:text-[hsl(var(--destructive))]"
                 onClick={() => {
                   if (document.activeElement === usernameRef.current) {
                     setUsername(username.slice(0, -1));
@@ -178,21 +189,19 @@ export default function LoginPage() {
                     setPassword(password.slice(0, -1));
                   }
                 }}
+                className="h-12 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] text-sm font-semibold text-gray-400 hover:border-red-500/50 hover:text-red-400 transition-all duration-150"
               >
                 ⌫
               </Button>
               <Button
                 type="button"
-                variant="outline"
-                className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-xl font-bold text-[hsl(var(--foreground))] transition-all duration-200 hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 onClick={() => handleNumericInput("0")}
+                className="h-12 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] text-lg font-bold text-white hover:border-[#0A84FF] hover:text-[#0A84FF] transition-all duration-150"
               >
                 0
               </Button>
               <Button
                 type="button"
-                variant="outline"
-                className="h-12 border-[hsl(var(--border))] bg-[hsl(var(--card))] text-sm font-semibold text-[hsl(var(--foreground))] transition-all duration-200 hover:border-[hsl(var(--muted-foreground))]"
                 onClick={() => {
                   if (document.activeElement === usernameRef.current) {
                     setUsername("");
@@ -200,14 +209,19 @@ export default function LoginPage() {
                     setPassword("");
                   }
                 }}
+                className="col-span-2 h-12 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] text-sm font-semibold text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all duration-150"
               >
                 Clear
               </Button>
             </div>
           </div>
+        </div>
 
-        </CardContent>
-      </Card>
+        {/* Footer Text */}
+        <p className="text-center text-xs text-gray-500 mt-6">
+          © 2026 {SHOP_NAME}. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 }

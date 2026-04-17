@@ -40,14 +40,24 @@ class ProductService {
 
   static async create(data) {
     // Validate required fields
-    if (!data.name || !data.barcode || !data.costPrice || !data.sellingPrice) {
+    if (
+      !data.name ||
+      data.costPrice === undefined ||
+      data.costPrice === null ||
+      data.costPrice === "" ||
+      data.sellingPrice === undefined ||
+      data.sellingPrice === null ||
+      data.sellingPrice === ""
+    ) {
       throw { status: 400, message: "Missing required fields" };
     }
 
     // Check barcode uniqueness
-    const existing = await Product.findOne({ barcode: data.barcode });
-    if (existing) {
-      throw { status: 400, message: "Barcode already exists" };
+    if (data.barcode) {
+      const existing = await Product.findOne({ barcode: data.barcode });
+      if (existing) {
+        throw { status: 400, message: "Barcode already exists" };
+      }
     }
 
     const product = new Product(data);

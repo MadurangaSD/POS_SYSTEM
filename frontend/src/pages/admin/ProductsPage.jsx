@@ -68,6 +68,39 @@ export default function ProductsPage() {
     expiryDate: "",
   });
 
+  const objectIdPattern = /^[a-fA-F0-9]{24}$/;
+
+  const normalizeRelationId = (value) => {
+    if (!value || value === "" || value === "null") return null;
+
+    const normalized =
+      typeof value === "object" ? value?._id || value?.id || "" : String(value).trim();
+
+    return objectIdPattern.test(normalized) ? normalized : null;
+  };
+
+  const toNumber = (value, fallback = null, integer = false) => {
+    if (value === null || value === undefined || value === "") return fallback;
+
+    const parsed = integer ? Number.parseInt(value, 10) : Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const getApiErrorMessage = (error, fallback = "Request failed") => {
+    const details = error.response?.data?.details;
+    const message = error.response?.data?.error;
+
+    if (Array.isArray(details) && details.length > 0) {
+      return `${message || fallback}: ${details.join("; ")}`;
+    }
+
+    return message || fallback;
+  };
+
+  const getRelationId = (value) => {
+    return normalizeRelationId(value);
+  };
+
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -137,7 +170,8 @@ export default function ProductsPage() {
         setFormData({
           name: product.name,
           barcode: product.barcode,
-          category: product.category,
+          category: getRelationId(product.category),
+          brand: getRelationId(product.brand),
           imageUrl: product.imageUrl || "",
           costPrice: product.costPrice.toString(),
           sellingPrice: product.sellingPrice.toString(),
@@ -157,7 +191,8 @@ export default function ProductsPage() {
         setFormData({
           name: product.name || formData.name,
           barcode: product.barcode || formData.barcode,
-          category: product.category || formData.category,
+          category: getRelationId(product.category) || formData.category || null,
+          brand: getRelationId(product.brand) || formData.brand || null,
           imageUrl: product.image || formData.imageUrl,
           costPrice: formData.costPrice,
           sellingPrice: formData.sellingPrice,
@@ -189,7 +224,8 @@ export default function ProductsPage() {
       setFormData({
         name: product.name,
         barcode: product.barcode,
-        category: product.category,
+        category: getRelationId(product.category),
+        brand: getRelationId(product.brand),
         imageUrl: product.imageUrl || "",
         costPrice: product.costPrice.toString(),
         sellingPrice: product.sellingPrice.toString(),
@@ -228,14 +264,26 @@ export default function ProductsPage() {
 
   const handleSaveProduct = async () => {
     try {
+      const costPrice = toNumber(formData.costPrice);
+      const sellingPrice = toNumber(formData.sellingPrice);
+
+      if (!Number.isFinite(costPrice) || !Number.isFinite(sellingPrice)) {
+        toast.error("Cost price and selling price are required");
+        return;
+      }
+
       const productData = {
         ...formData,
-        costPrice: parseFloat(formData.costPrice),
-        sellingPrice: parseFloat(formData.sellingPrice),
-        wholeSalePrice: formData.wholeSalePrice ? parseFloat(formData.wholeSalePrice) : undefined,
-        quantity: parseInt(formData.quantity),
-        reorderLevel: parseInt(formData.reorderLevel),
+        barcode: formData.barcode?.trim() || null,
+        category: getRelationId(formData.category),
+        brand: getRelationId(formData.brand),
+        costPrice,
+        sellingPrice,
+        wholeSalePrice: formData.wholeSalePrice ? toNumber(formData.wholeSalePrice) : undefined,
+        quantity: toNumber(formData.quantity, 0, true),
+        reorderLevel: toNumber(formData.reorderLevel, 10, true),
         expiryDate: formData.expiryDate || undefined,
+        sku: formData.sku?.trim() || null,
       };
 
       if (editingProduct) {
@@ -250,7 +298,7 @@ export default function ProductsPage() {
       loadProducts();
     } catch (error) {
       console.error("Error saving product:", error);
-      toast.error(error.response?.data?.message || "Failed to save product");
+      toast.error(getApiErrorMessage(error, "Failed to save product"));
     }
   };
 
@@ -593,9 +641,9 @@ export default function ProductsPage() {
             <div>
               <label className="text-sm font-medium text-white/85">{t('products.category')} *</label>
               <Select
-                value={formData.category}
+                value={formData.category || ""}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, category: value })
+                  setFormData({ ...formData, category: value || null })
                 }
               >
                 <SelectTrigger className="bg-[#242426]">
@@ -614,9 +662,9 @@ export default function ProductsPage() {
             <div>
               <label className="text-sm font-medium text-white/85">Brand</label>
               <Select
-                value={formData.brand}
+                value={formData.brand || ""}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, brand: value })
+                  setFormData({ ...formData, brand: value || null })
                 }
               >
                 <SelectTrigger className="bg-[#242426]">
